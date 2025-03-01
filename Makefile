@@ -5,7 +5,8 @@ CPP = c++
 INCLUDES = -I.
 CFLAGS = -Wall -Wextra -Werror -std=c++98
 
-SRCS = main.cpp server.cpp
+SRCS =  main.cpp \
+		Server.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 
