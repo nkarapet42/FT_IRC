@@ -1,25 +1,28 @@
 #ifndef SERVER_HPP
 # define SERVER_HPP
 
-# include <iostream>
-# include <algorithm>
-# include <vector>
-# include <map>
-# include <string>
-# include <cstring>
-# include <cstdlib>
 # include <sys/socket.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
 # include <unistd.h>
+# include <iostream>
+# include <cstring>
+# include <cstdlib>
+# include <string>
+# include <vector>
+# include <string>
 # include <poll.h>
+# include <set>
+# include <map>
+# include "Client.hpp"
+# include "Channel.hpp"
 
 class Server {
 private:
-	int							_serverSocket;
-	std::vector<pollfd>			_pollFds;
-	std::map<int, std::string>	_clients;
-	std::string					_password;
+	int						_serverSocket;
+	std::vector<pollfd>		_pollFds;
+	std::map<int, Client>	_clients;
+	std::string				_password;
 
 	Server(const Server& other);
 	Server& operator=(const Server& other);

@@ -59,7 +59,7 @@ void	Server::run() {
 
 void	Server::authenticateClient(int clientFd, const std::string& password) {
 	if (password == _password) {
-		_clients[clientFd] = "authenticated";
+		_clients[clientFd].isAuthenticated = true;
 		sendMessage(clientFd, "Authentication successful!\n");
 		sendMessage(clientFd, "You can now send commands.\n");
 	} else {
@@ -82,7 +82,7 @@ void	Server::acceptNewClient() {
 	clientPollFd.fd = clientFd;
 	clientPollFd.events = POLLIN;
 	_pollFds.push_back(clientPollFd);
-	_clients[clientFd] = "";
+	_clients[clientFd] = Client(clientFd);
 
 
 	sendMessage(clientFd, "Please authenticate by sending the password: ");
@@ -112,11 +112,11 @@ void	Server::handleClientMessage(int clientFd) {
 		message.erase(message.length() - 1);
 	}
 	std::cout << "Received from FD " << clientFd << ": " << buffer;
-	if (_clients[clientFd].empty()){
-		authenticateClient(clientFd, message);
-	} else {
+	if (_clients[clientFd].isAuthenticated){
 		;
-		//handleClientCommands(clientFd, message);
+		// handleClientCommands(clientFd, message);
+	} else {
+		authenticateClient(clientFd, message);
 	}
 }
 
