@@ -31,9 +31,9 @@ void    Client::setUsername(const std::string& user) {
 }
 
 // void    Client::joinChannel(const std::string& channel) {
-//     channels.insert(channel);
+//
 // }
 
 // void    Client::leaveChannel(const std::string& channel) {
-//     channels.erase(channel);
+//
 // }

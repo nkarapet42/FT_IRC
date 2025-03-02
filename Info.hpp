@@ -4,6 +4,7 @@
 # include <iostream>
 
 struct Info {
+	std::string	channelName;
 	std::string	password;
 	bool		isOperator;
 };

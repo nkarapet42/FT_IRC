@@ -3,17 +3,17 @@
 
 # include "Info.hpp"
 # include <string>
-# include <set>
+# include <vector>
 
 class Client {
 public:
-	int								fd;
-	std::string						nickname;
-	std::string						username;
-	std::set<Info>	channels;
-	std::string						curchannel;
-	bool							isAuthenticated;
-	bool							isOperator;
+	int					fd;
+	std::string			nickname;
+	std::string			username;
+	std::vector<Info>	channels;
+	std::string			curchannel;
+	bool				isAuthenticated;
+	bool				isOperator;
 
 	Client();
 	Client(int fd);

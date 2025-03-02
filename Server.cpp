@@ -115,6 +115,13 @@ void	Server::handleClientMessage(int clientFd) {
 	if (_clients[clientFd].isAuthenticated){
 		;
 		// handleClientCommands(clientFd, message);
+		/*
+			Nayi inch es anum Cliet mej inch vor commentaca et es grum, channels eti nranqa te vor chatum Client ka
+			Info-vectora dra mej pahvuma anun@ channeli, password datark dir demic nuyne operator@ dir false demic, heto global mej main-uma std::vector<Channel> channelsIRC; 
+			Nayum es ete et nuyn anunov channel ka ete goyutyun uni prosto Join es anum et chat u parol es uzum ete parol ka ete chka miangamic kpcnum es parol@ datark toxum
+			Ete goyutyun chuni tenc anunov chat stexcum es avelacnum es globali mej demic channelPass = "" u havepass = false kdnes,u et kpnoxin et chati hamar miangamic operator ksarqes
+			Ete et client pasword dni ira channeli vra kpnox@ pti et parol@ gri,u vorves user kpni,ete parol@ poxvi userin dursa qcelu,vor noric parol@ gri,bayc ete et userin operator en tve u urish mek@ parol@ poxuma inq@ pti chatum mna u parol@ update lini ira mot
+		*/
 	} else {
 		authenticateClient(clientFd, message);
 	}
