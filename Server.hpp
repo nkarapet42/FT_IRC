@@ -11,6 +11,7 @@
 # include <string>
 # include <vector>
 # include <string>
+#include <sstream>
 # include <poll.h>
 # include <set>
 # include <map>
@@ -29,7 +30,7 @@ private:
 
 	void	authenticateClient(int clientFd, const std::string& password);
 	void	sendMessage(int clientFd, const std::string& message);
-	void	broadcastMessage(const std::string& message, int senderFd);
+	void	broadcastMessage(const std::string& channelName, int senderFd, const std::string& message);
 	void	handleClientCommands(int clientFd, const std::string& command);
 
 public:

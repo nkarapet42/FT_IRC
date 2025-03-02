@@ -113,8 +113,7 @@ void	Server::handleClientMessage(int clientFd) {
 	}
 	std::cout << "Received from FD " << clientFd << ": " << buffer;
 	if (_clients[clientFd].isAuthenticated){
-		;
-		// handleClientCommands(clientFd, message);
+		handleClientCommands(clientFd, message);
 		/*
 			Nayi inch es anum Cliet mej inch vor commentaca et es grum, channels eti nranqa te vor chatum Client ka
 			Info-vectora dra mej pahvuma anun@ channeli, password datark dir demic nuyne operator@ dir false demic, heto global mej main-uma std::vector<Channel> channelsIRC; 
@@ -127,3 +126,40 @@ void	Server::handleClientMessage(int clientFd) {
 	}
 }
 
+void Server::handleClientCommands(int clientFd, const std::string& command) {
+    std::stringstream ss(command);
+    std::string cmd, channelName, password, message;
+    ss >> cmd >> channelName;
+
+    if (cmd == "JOIN") {
+        ss >> password;
+        _clients[clientFd].joinChannel(channelName, password);
+    } 
+    else if (cmd == "CHANGEPASS") {
+        ss >> password;
+        _clients[clientFd].changeChannelPassword(channelName, password);
+    } 
+    else if (cmd == "LEAVE") {
+        _clients[clientFd].leaveChannel(channelName);
+    }
+    else if (cmd == "MSG") {
+        std::getline(ss, message);
+        if (!message.empty() && message[0] == ' ')
+            message = message.substr(1);
+
+        if (!message.empty())
+            broadcastMessage(channelName, clientFd, message);
+        else
+            sendMessage(clientFd, "Error: No message provided.\n");
+    } 
+    else {
+        sendMessage(clientFd, "Unknown command: " + cmd + "\n");
+    }
+}
+void Server::broadcastMessage(const std::string& channelName, int senderFd, const std::string& message) {
+    for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+        if (it->second.curchannel == channelName && it->first != senderFd) {
+            sendMessage(it->first, "[ " + _clients[senderFd].nickname + " ]: " + message + "\n");
+        }
+    }
+}
