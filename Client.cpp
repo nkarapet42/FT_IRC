@@ -29,12 +29,17 @@ void    Client::setNickname(const std::string& nick) {
 void    Client::setUsername(const std::string& user) {
     username = user;
 }
-void Client::joinChannel(const std::string& channelName, const std::string& password) {
+
+const std::string&  Client::getNickname() {
+    return (nickname);
+}
+
+void    Client::joinChannel(const std::string& channelName, const std::string& password) {
     for (size_t i = 0; i < channelsIRC.size(); i++) {
         if (channelsIRC[i].channelName == channelName) {
             if (channelsIRC[i].havePass && channelsIRC[i].channelPass != password) {
                 std::cout << "Incorrect password. Access denied.\n";
-                return;
+                return ;
             }
             std::cout << nickname << " joined channel: " << channelName << "\n";
             curchannel = channelName;
@@ -44,7 +49,7 @@ void Client::joinChannel(const std::string& channelName, const std::string& pass
             newChannel.password = password;
             newChannel.isOperator = false;
             channels.push_back(newChannel);
-            return;
+            return ;
         }
     }
 
@@ -64,6 +69,7 @@ void Client::joinChannel(const std::string& channelName, const std::string& pass
     channels.push_back(newInfo);
 }
 
+
 void Client::leaveChannel(const std::string& channel) {
     for (size_t i = 0; i < channels.size(); ++i) {
         if (channels[i].channelName == channel) {
@@ -77,6 +83,7 @@ void Client::leaveChannel(const std::string& channel) {
     }
     std::cout << username << " You are not in channel: " << channel << std::endl;
 }
+
 
 void    Client::changeChannelPassword(const std::string& channelName, const std::string& newPassword) {
     for (size_t i = 0; i < channelsIRC.size(); i++) {
