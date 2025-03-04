@@ -43,6 +43,7 @@ void    Client::joinChannel(const std::string& channelName, const std::string& p
             }
             std::cout << nickname << " joined channel: " << channelName << "\n";
             curchannel = channelName;
+            std::cout << curchannel << "\n";
 
             Info newChannel;
             newChannel.channelName = channelName;
@@ -74,14 +75,14 @@ void Client::leaveChannel(const std::string& channel) {
     for (size_t i = 0; i < channels.size(); ++i) {
         if (channels[i].channelName == channel) {
             channels.erase(channels.begin() + i);
-            std::cout << username << " Left channel: " << channel << std::endl;
+            std::cout << nickname << " Left channel: " << channel << std::endl;
             if (curchannel == channel) {
                 curchannel = channels.empty() ? "" : channels.back().channelName;
             }
             return;
         }
     }
-    std::cout << username << " You are not in channel: " << channel << std::endl;
+    std::cout << nickname << " You are not in channel: " << channel << std::endl;
 }
 
 

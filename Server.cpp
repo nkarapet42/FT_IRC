@@ -60,7 +60,7 @@ void	Server::run() {
 void	Server::authenticateClient(int clientFd, const std::string& password) {
 	if (password == _password) {
 		_clients[clientFd].isAuthenticated = true;
-		sendMessage(clientFd, "Authentication successful!\n");
+		sendMessage(clientFd, std::string(GREEN) + "Authentication successful!\n" + std::string(RESET));
 		sendMessage(clientFd, "You can now send commands.\n");
 	} else {
 		sendMessage(clientFd, "Incorrect password, try again: ");
@@ -85,7 +85,7 @@ void	Server::acceptNewClient() {
 	_clients[clientFd] = Client(clientFd);
 
 
-	sendMessage(clientFd, "Please authenticate by sending the password: ");
+	sendMessage(clientFd, std::string(PURPLE) + "Please authenticate by sending the password: " + std::string(RESET));
 	std::cout << "New client connected: FD " << clientFd << "\n";
 }
 
@@ -118,20 +118,48 @@ void	Server::handleClientMessage(int clientFd) {
 		authenticateClient(clientFd, message);
 	}
 }
+void	Server::setUsername(int clientFd, const std::string& user) {
+	if (user.empty()) {
+        sendMessage(clientFd, std::string(RED) + "Error: Nickname cannot be empty.\n" + std::string(RESET));
+        return;
+    }
+	_clients[clientFd].setUsername(user);
+	sendMessage(clientFd, std::string(CYAN) + "Your username has been seted.\n" + std::string(RESET));
+}
+
+void	Server::privateMessage(int clientFd, const std::string& line) {
+	std::stringstream ss(line);
+    std::string message;
+	ss >> message;
+	if (!message.empty() && message[0] == ' ')
+		message = message.substr(1);
+	if (!message.empty())
+		broadcastMessage(_clients[clientFd].curchannel, clientFd, message);
+	else
+		sendMessage(clientFd, std::string(RED) + "Error: No message provided.\n" + std::string(RESET));
+}
 
 void Server::handleClientCommands(int clientFd, const std::string& line) {
     std::stringstream ss(line);
     std::string cmd, channelName, password, message;
-    ss >> cmd >> channelName;
+	ss >> cmd >> channelName;
 
-    if (cmd == "JOIN") {
+	cout << _clients[clientFd].curchannel << endl;
+	if (cmd != "USER" && _clients[clientFd].username.empty()) {
+		sendMessage(clientFd, std::string(RED) + "Error: Please set a username before starting conversation.\n" + std::string(RESET));
+		return ;
+	}
+	if (cmd == "USER") {
+		setUsername(clientFd, channelName);
+	}
+    else if (cmd == "JOIN") {
         ss >> password;
 		join(clientFd, channelName, password);
     }
 	else if (cmd == "NICK") {
 		changeNickname(clientFd, channelName);
     }
-    else if (cmd == "CHANGEPASS") {
+    else if (cmd == "PASS") {
 		ss >> password;
         _clients[clientFd].changeChannelPassword(channelName, password);
     } 
@@ -139,19 +167,15 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 		_clients[clientFd].leaveChannel(channelName);
     }
     else if (cmd == "MSG") {
-		std::getline(ss, message);
-        if (!message.empty() && message[0] == ' ')
-		message = message.substr(1);
 		
-        if (!message.empty())
-            broadcastMessage(channelName, clientFd, message);
-			else
-            sendMessage(clientFd, std::string(RED) + "Error: No message provided.\n" + std::string(RESET));
-		} 
-		else {
-			sendMessage(clientFd, "Unknown command: " + cmd + "\n");
-		}
+	} 
+	else if (!_clients[clientFd].curchannel.empty()) {
+		privateMessage(clientFd, line);
 	}
+	else {
+		sendMessage(clientFd, std::string(RED) + "Unknown command: " + std::string(RESET) + cmd + "\n");
+	}
+}
 	
 	
 void	Server::join(int clientFd, const std::string& channelName, const std::string& password) {

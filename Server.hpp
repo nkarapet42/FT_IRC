@@ -47,6 +47,8 @@ private:
 	void	broadcastMessage(const std::string& channelName, int senderFd, const std::string& message);
 	void	handleClientCommands(int clientFd, const std::string& command);
 	void	changeNickname(int clientFd, const std::string& newNick);
+	void	setUsername(int clientFd, const std::string& user);
+	void	privateMessage(int clientFd, const std::string& line);
 
 public:
 	Server(int port, const std::string& password);
