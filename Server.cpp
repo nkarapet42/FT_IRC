@@ -162,7 +162,6 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
     std::string cmd, channelName, password, message;
 	ss >> cmd >> channelName;
 
-	cout << _clients[clientFd].curchannel << endl;
 	if (cmd != "USER" && _clients[clientFd].username.empty()) {
 		sendMessage(clientFd, std::string(RED) + "Error: Please set a username before starting conversation.\n" + std::string(RESET));
 		return ;
@@ -197,6 +196,10 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 	
 	
 void	Server::join(int clientFd, const std::string& channelName, const std::string& password) {
+    if (_clients[clientFd].curchannel == channelName) {
+		sendMessage(clientFd, std::string(RED) + "Error: You are already in the channel.\n" + std::string(RESET));
+		return ;
+    }
 	if (_clients[clientFd].getNickname().empty()) {
 		sendMessage(clientFd, std::string(RED) + "Error: Please add a nickname, then try to join.\n" + std::string(RESET));
 		return ;
@@ -212,6 +215,7 @@ void	Server::join(int clientFd, const std::string& channelName, const std::strin
                 return ;
 			}
 			sendMessage(clientFd, _clients[clientFd].getNickname() + " joined channel: " + channelName + "\n");
+			_clients[clientFd].joinChannel(channelName, password);
             return ;
 		}
 	}
@@ -222,7 +226,7 @@ void	Server::join(int clientFd, const std::string& channelName, const std::strin
 void Server::broadcastMessage(const std::string& channelName, int senderFd, const std::string& message) {
     for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
         if (it->second.curchannel == channelName && it->first != senderFd) {
-            sendMessage(it->first, "[ " + _clients[senderFd].nickname + " ]: " + message + "\n");
+            sendMessage(it->first, std::string(CYAN) + "[ " + _clients[senderFd].nickname + " ]: " + message + "\n" + std::string(RESET));
         }
     }
 }

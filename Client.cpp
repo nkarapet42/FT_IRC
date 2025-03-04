@@ -43,8 +43,6 @@ void    Client::joinChannel(const std::string& channelName, const std::string& p
             }
             std::cout << nickname << " joined channel: " << channelName << "\n";
             curchannel = channelName;
-            // curchannely stexcvac channeli depqum user join lineluc chi poxvum
-            std::cout << curchannel << "\n";
 
             Info newChannel;
             newChannel.channelName = channelName;
