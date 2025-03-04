@@ -4,6 +4,9 @@
 # include "Info.hpp"
 # include <string>
 # include <vector>
+# include "Channel.hpp"
+
+extern std::vector<Channel> channelsIRC;
 
 class Client {
 public:
@@ -21,10 +24,12 @@ public:
 	Client& operator=(const Client& other);
 	~Client();
 	
-	void	setNickname(const std::string& nick);
-	void	setUsername(const std::string& user);
-	// void	joinChannel(const std::string& channel);
-	// void	leaveChannel(const std::string& channel);
+	const std::string& 	getNickname();
+	void				setNickname(const std::string& nick);
+	void				setUsername(const std::string& user);
+	void   				joinChannel(const std::string& channelName, const std::string& password);
+	void    			changeChannelPassword(const std::string& channelName, const std::string& newPassword);
+	void				leaveChannel(const std::string& channel);
 };
 
 #endif

@@ -18,7 +18,7 @@ int main(int argc, char* argv[]) {
 		return (1);
 	}
 	if (!isValidPort(argv[1])) {
-		std::cerr << "Error: Invalid port. Port must be a number between 1 and 65535.\n";
+		std::cerr << RED << "Error: Invalid port. Port must be a number between 1 and 65535.\n" << RESET;
 		return (1);
 	}
 	int port = std::atoi(argv[1]);
