@@ -130,7 +130,7 @@ void	Server::setUsername(int clientFd, const std::string& user) {
 void	Server::Message(int clientFd, const std::string& line) {
 	std::stringstream ss(line);
     std::string message;
-	ss >> message;
+	std::getline(ss, message);
 	if (!message.empty() && message[0] == ' ')
 		message = message.substr(1);
 	if (!message.empty())
@@ -142,19 +142,25 @@ void	Server::Message(int clientFd, const std::string& line) {
 void	Server::privateMessage(int clientFd, const std::string& line) {
     std::stringstream ss(line);
     std::string cmd, client, message;
-	ss >> cmd >> client >> message;
-		if (!message.empty() && message[0] == ' ')
-			message = message.substr(1);
-		if (!message.empty()) {
-			for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
-				if (it->second.nickname == client) {
-					sendMessage(it->second.fd, std::string(CYAN) + "[ " + _clients[clientFd].nickname + " ]: " + message + "\n" + std::string(RESET));
-					return;
-				}
+	ss >> cmd >> client;
+	if (_clients[clientFd].nickname == client) {
+		sendMessage(clientFd, std::string(RED) + "Error: Cant send message to yourself.\n" + std::string(RESET));
+		return;
+	}
+	std::getline(ss, message);
+	if (!message.empty() && message[0] == ' ')
+		message = message.substr(1);
+	if (!message.empty()) {
+		for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+			if (it->second.nickname == client) {
+				sendMessage(it->second.fd, std::string(CYAN) + "PRIVMSG : [ " + _clients[clientFd].nickname +" -> " + client + " ]: " + message + "\n" + std::string(RESET));
+				return;
 			}
 		}
-		else
-			sendMessage(clientFd, std::string(RED) + "Error: No message provided.\n" + std::string(RESET));
+		sendMessage(clientFd, std::string(RED) + "Error: Nickname not found.\n" + std::string(RESET));
+	}
+	else
+		sendMessage(clientFd, std::string(RED) + "Error: No message provided.\n" + std::string(RESET));
 }
 
 void	Server::kick(int clientFd, const std::string& channel, const std::string& nick) {
@@ -207,7 +213,7 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
     else if (cmd == "LEAVE") {
 		_clients[clientFd].leaveChannel(channelName);
     }
-    else if (cmd == "MSG") {
+    else if (cmd == "PRIVMSG") {
 		privateMessage(clientFd, line);
 	}
 	else if (cmd == "KICK") {
