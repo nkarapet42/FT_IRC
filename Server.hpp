@@ -48,7 +48,9 @@ private:
 	void	handleClientCommands(int clientFd, const std::string& command);
 	void	changeNickname(int clientFd, const std::string& newNick);
 	void	setUsername(int clientFd, const std::string& user);
+	void	Message(int clientFd, const std::string& line);
 	void	privateMessage(int clientFd, const std::string& line);
+
 
 public:
 	Server(int port, const std::string& password);

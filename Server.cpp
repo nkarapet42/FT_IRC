@@ -120,14 +120,14 @@ void	Server::handleClientMessage(int clientFd) {
 }
 void	Server::setUsername(int clientFd, const std::string& user) {
 	if (user.empty()) {
-        sendMessage(clientFd, std::string(RED) + "Error: Nickname cannot be empty.\n" + std::string(RESET));
+        sendMessage(clientFd, std::string(RED) + "Error: Username cannot be empty.\n" + std::string(RESET));
         return;
     }
 	_clients[clientFd].setUsername(user);
 	sendMessage(clientFd, std::string(CYAN) + "Your username has been seted.\n" + std::string(RESET));
 }
 
-void	Server::privateMessage(int clientFd, const std::string& line) {
+void	Server::Message(int clientFd, const std::string& line) {
 	std::stringstream ss(line);
     std::string message;
 	ss >> message;
@@ -137,6 +137,24 @@ void	Server::privateMessage(int clientFd, const std::string& line) {
 		broadcastMessage(_clients[clientFd].curchannel, clientFd, message);
 	else
 		sendMessage(clientFd, std::string(RED) + "Error: No message provided.\n" + std::string(RESET));
+}
+
+void	Server::privateMessage(int clientFd, const std::string& line) {
+    std::stringstream ss(line);
+    std::string cmd, client, message;
+	ss >> cmd >> client >> message;
+		if (!message.empty() && message[0] == ' ')
+			message = message.substr(1);
+		if (!message.empty()) {
+			for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+				if (it->second.nickname == client) {
+					sendMessage(it->second.fd, std::string(CYAN) + "[ " + _clients[clientFd].nickname + " ]: " + message + "\n" + std::string(RESET));
+					return;
+				}
+			}
+		}
+		else
+			sendMessage(clientFd, std::string(RED) + "Error: No message provided.\n" + std::string(RESET));
 }
 
 void Server::handleClientCommands(int clientFd, const std::string& line) {
@@ -167,10 +185,10 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 		_clients[clientFd].leaveChannel(channelName);
     }
     else if (cmd == "MSG") {
-		
+		privateMessage(clientFd, line);
 	} 
 	else if (!_clients[clientFd].curchannel.empty()) {
-		privateMessage(clientFd, line);
+		Message(clientFd, line);
 	}
 	else {
 		sendMessage(clientFd, std::string(RED) + "Unknown command: " + std::string(RESET) + cmd + "\n");
