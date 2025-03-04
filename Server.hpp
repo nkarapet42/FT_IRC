@@ -8,10 +8,10 @@
 # include <iostream>
 # include <cstring>
 # include <cstdlib>
+# include <sstream>
 # include <string>
 # include <vector>
 # include <string>
-#include <sstream>
 # include <poll.h>
 # include <set>
 # include <map>
@@ -26,7 +26,7 @@ using std::endl;
 # define RESET "\e[0m"
 # define RED "\e[1;91m"
 # define CYAN "\e[1;36m"
-# define YELLOW "\e[1;33m"
+# define YELLOW "\e[33m"
 # define PURPLE "\e[1;35m"
 # define BLUE "\e[1;34m"
 
@@ -52,6 +52,12 @@ private:
 	void	privateMessage(int clientFd, const std::string& line);
 	void	kick(int clientFd, const std::string& line, const std::string& nick);
 
+
+	//BOT
+	void	botHelp(int clientFd, const std::string& line);
+	void	sendMotd(int clientFd, const std::string& line);
+	void	sendTime(int clientFd, const std::string& line);
+	void	sendWeather(int clientFd, const std::string& line);
 
 public:
 	Server(int port, const std::string& password);

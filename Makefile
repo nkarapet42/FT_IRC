@@ -2,7 +2,11 @@ NAME = ircserv
 
 CPP = c++
 
-INCLUDES = -I.
+INCLUDES =  Server.hpp \
+			Client.hpp \
+			Info.hpp \
+			Channel.hpp
+
 CFLAGS = -Wall -Wextra -Werror -std=c++98
 
 SRCS =  main.cpp \
@@ -16,7 +20,7 @@ all: $(NAME)
 $(NAME): $(OBJS)
 	$(CPP) $(CFLAGS) -o $(NAME) $(OBJS)
 
-%.o: %.cpp
+%.o: %.cpp Makefile $(INCLUDES)
 	$(CPP) $(CFLAGS) -c $< -o $@
 
 clean:
