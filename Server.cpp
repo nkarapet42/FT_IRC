@@ -157,9 +157,33 @@ void	Server::privateMessage(int clientFd, const std::string& line) {
 			sendMessage(clientFd, std::string(RED) + "Error: No message provided.\n" + std::string(RESET));
 }
 
+void	Server::kick(int clientFd, const std::string& channel, const std::string& nick) {
+	(void)nick;
+	for (size_t i = 0; i < channelsIRC.size(); i++) {
+		if (channelsIRC[i].channelName == channel) {
+			break;
+		}
+	}
+	for (size_t i = 0; i < _clients[clientFd].channels.size(); ++i) {
+        if (_clients[clientFd].channels[i].channelName == channel) {
+            _clients[clientFd].channels.erase(_clients[clientFd].channels.begin() + i);
+            std::cout << _clients[clientFd].nickname << " Left channel: " << channel << std::endl;
+            if (_clients[clientFd].curchannel == channel) {
+                _clients[clientFd].curchannel = _clients[clientFd].channels.empty() ? "" : _clients[clientFd].channels.back().channelName;
+            }
+            return;
+        }
+    }
+	if (!_clients[clientFd].isOperator) {
+		sendMessage(clientFd, std::string(RED) + "Error: Permission denied.\n" + std::string(RESET));
+		return ;
+	}
+
+}
+
 void Server::handleClientCommands(int clientFd, const std::string& line) {
     std::stringstream ss(line);
-    std::string cmd, channelName, password, message;
+    std::string cmd, channelName, password, nick;
 	ss >> cmd >> channelName;
 
 	if (cmd != "USER" && _clients[clientFd].username.empty()) {
@@ -185,7 +209,11 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
     }
     else if (cmd == "MSG") {
 		privateMessage(clientFd, line);
-	} 
+	}
+	else if (cmd == "KICK") {
+		ss >> nick;
+		kick(clientFd, channelName, nick);
+	}
 	else if (!_clients[clientFd].curchannel.empty()) {
 		Message(clientFd, line);
 	}
@@ -214,12 +242,12 @@ void	Server::join(int clientFd, const std::string& channelName, const std::strin
 				sendMessage(clientFd, std::string(RED) + "Error: This channel does not have password, try without passWord.\n" + std::string(RESET));
                 return ;
 			}
-			sendMessage(clientFd, _clients[clientFd].getNickname() + " joined channel: " + channelName + "\n");
+			sendMessage(clientFd,  std::string(CYAN) + _clients[clientFd].getNickname() + " joined channel: " + channelName + "\n" +  std::string(RESET));
 			_clients[clientFd].joinChannel(channelName, password);
             return ;
 		}
 	}
-    sendMessage(clientFd, _clients[clientFd].getNickname() + " created and joined channel: " + channelName + "\n");
+    sendMessage(clientFd,  std::string(CYAN) + _clients[clientFd].getNickname() + " created and joined channel: " + channelName + "\n" + std::string(RESET));
 	_clients[clientFd].joinChannel(channelName, password);
 }
 
@@ -247,7 +275,7 @@ void Server::changeNickname(int clientFd, const std::string& newNick) {
     std::string oldNick = _clients[clientFd].nickname;
     _clients[clientFd].setNickname(newNick);
 
-    sendMessage(clientFd, "Your nickname has been changed to " + newNick + "\n");
+    sendMessage(clientFd,  std::string(CYAN) + "Your nickname has been changed to " + newNick + "\n" + std::string(RESET));
 
     for (size_t i = 0; i < _clients[clientFd].channels.size(); i++) {
         std::string channel = _clients[clientFd].channels[i].channelName;

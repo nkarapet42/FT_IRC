@@ -50,6 +50,7 @@ private:
 	void	setUsername(int clientFd, const std::string& user);
 	void	Message(int clientFd, const std::string& line);
 	void	privateMessage(int clientFd, const std::string& line);
+	void	kick(int clientFd, const std::string& line, const std::string& nick);
 
 
 public:
