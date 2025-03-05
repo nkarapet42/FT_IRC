@@ -249,6 +249,62 @@ void Server::quitClient(int clientFd, const std::string& line) {
     _clients.erase(it);
 }
 
+void Server::whoCommand(int clientFd, const std::string& line) {
+	std::stringstream ss(line);
+	std::string cmd, channelName;
+	ss >> cmd >> channelName;
+
+	std::string restOfLine;
+	std::getline(ss, restOfLine);
+	if (!restOfLine.empty()) {
+		sendMessage(clientFd, std::string(RED) + "Error: Wrong Syntax.\n" + std::string(RESET));
+		sendMessage(clientFd, std::string(RED) + "Usage: WHO [channel].\n" + std::string(RESET));
+		return;
+	}
+    if (channelName.empty()) {
+        for (std::vector<Channel>::iterator it = channelsIRC.begin(); it != channelsIRC.end(); ++it) {
+            Channel& channel = *it;
+            std::string response = "WHO " + channel.channelName + " :";
+            for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+                Client& client = it->second;
+                for (std::vector<Info>::iterator infoIt = client.channels.begin(); infoIt != client.channels.end(); ++infoIt) {
+                    if (infoIt->channelName == channel.channelName) {
+                        response += client.nickname + " ";
+                        response += (client.isOperator ? "(operator) " : "(normal) ");
+                        break;
+                    }
+                }
+            }
+
+            sendMessage(clientFd, std::string(BLUE) + response + "\n" + std::string(RESET));
+        }
+    } else {
+        Channel* channel = NULL;
+        for (std::vector<Channel>::iterator it = channelsIRC.begin(); it != channelsIRC.end(); ++it) {
+            if (it->channelName == channelName) {
+                channel = &(*it);
+                break;
+            }
+        }
+        if (!channel) {
+            sendMessage(clientFd, std::string(RED) + "ERROR: Channel not found.\n" + std::string(RESET));
+            return;
+        }
+        std::string response = "WHO " + channelName + " :";
+        for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
+            Client& client = it->second;
+            for (std::vector<Info>::iterator infoIt = client.channels.begin(); infoIt != client.channels.end(); ++infoIt) {
+                if (infoIt->channelName == channelName) {
+                    response += client.nickname + " ";
+                    response += (client.isOperator ? "(operator) " : "(normal) ");
+                    break;
+                }
+            }
+        }
+        sendMessage(clientFd, std::string(BLUE) + response + "\n" + std::string(RESET));
+    }
+}
+
 
 /****************************************************************************************************/
 /****************************************************************************************************/
@@ -666,6 +722,8 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 		_clients[clientFd].leaveChannel(channelName);
 	} else if (cmd == "PRIVMSG") {
 		privateMessage(clientFd, line);
+	} else if (cmd == "WHO") {
+		whoCommand(clientFd, line);
 	} else if (cmd == "KICK") {
 		ss >> nick;
 		kick(clientFd, channelName, nick);

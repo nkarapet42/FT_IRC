@@ -11,5 +11,4 @@ struct Info {
 	bool						isOperator;
 };
 
-
 #endif
