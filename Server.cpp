@@ -219,6 +219,36 @@ sendMessage(clientFd, std::string(RED) + "Error: The channel doesn't exist.\n" +
 }
 
 
+void Server::quitClient(int clientFd, const std::string& line) {
+	std::stringstream ss(line);
+	std::string cmd;
+	ss >> cmd;
+	std::string message;
+	std::getline(ss, message);
+    std::map<int, Client>::iterator it = _clients.find(clientFd);
+    if (it == _clients.end()) {
+        return;
+    }
+
+    std::string quitMessage = "Client " + it->second.nickname + " has left the server";
+    if (!message.empty()) {
+        quitMessage += " (" + message + ")";
+    } else {
+		quitMessage += " (All eyes on me)";
+	}
+    quitMessage += ".\n";
+
+    for (size_t i = 0; i < it->second.channels.size(); ++i) {
+        broadcastMessage(it->second.channels[i].channelName, clientFd, std::string(CYAN) + quitMessage + std::string(RESET));
+    }
+    for (size_t i = 0; i < it->second.channels.size(); ++i) {
+        it->second.leaveChannel(it->second.channels[i].channelName);
+    }
+
+    close(clientFd);
+    _clients.erase(it);
+}
+
 
 /****************************************************************************************************/
 /****************************************************************************************************/
@@ -627,6 +657,8 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 		join(clientFd, channelName, password);
 	} else if (cmd == "NICK") {
 		changeNickname(clientFd, channelName);
+	} else if (cmd == "QUIT") {
+		quitClient(clientFd, line);
 	} else if (cmd == "PASS") {
 		ss >> password;
 		_clients[clientFd].changeChannelPassword(channelName, password);
@@ -660,7 +692,6 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 		sendMessage(clientFd, std::string(PURPLE) + "Use HELP to know more about commands" + std::string(RESET) + "\n");
 	}
 }
-	
 	
 void	Server::join(int clientFd, const std::string& channelName, const std::string& password) {
 	if (_clients[clientFd].curchannel == channelName) {
