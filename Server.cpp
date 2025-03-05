@@ -239,15 +239,17 @@ void Server::botHelp(int clientFd, const std::string& line) {
 
 	std::string helpMessage = "Inforamtion about Commands:\n";
 	helpMessage += "Note: <> means required, [] means optional.\n";
-	helpMessage += "HELP - Show this help message\n";
 	helpMessage += "JOIN <channel> [password] - Join a channel\n";
 	helpMessage += "KICK <channel> <nickname> - Kick a user from a channel\n";
 	helpMessage += "LEAVE <channel> - Leave a channel\n";
-	helpMessage += "MOTD - Get the message of the day \n";
 	helpMessage += "NICK <nickname> - Set your nickname\n";
 	helpMessage += "PRIVMSG <nickname> <message> - Send private message\n";
-	helpMessage += "TIME - Get the current server time\n";
 	helpMessage += "USER <username> - Set your username\n";
+	helpMessage += "Bot Commands Information:\n";
+	helpMessage += "HELP - Show this help message\n";
+	helpMessage += "MOTD - Get the message of the day \n";
+	helpMessage += "TIME - Get the current server time\n";
+	helpMessage += "WEATHER - Get a random weather forecast\n";
 
 	sendMessage(clientFd, std::string(YELLOW) + helpMessage + std::string(RESET));
 }
