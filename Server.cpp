@@ -168,28 +168,43 @@ void	Server::privateMessage(int clientFd, const std::string& line) {
 }
 
 void	Server::kick(int clientFd, const std::string& channel, const std::string& nick) {
-	(void)nick;
-	for (size_t i = 0; i < channelsIRC.size(); i++) {
-		if (channelsIRC[i].channelName == channel) {
-			break;
-		}
-	}
-	for (size_t i = 0; i < _clients[clientFd].channels.size(); ++i) {
-		if (_clients[clientFd].channels[i].channelName == channel) {
-			_clients[clientFd].channels.erase(_clients[clientFd].channels.begin() + i);
-			std::cout << _clients[clientFd].nickname << " Left channel: " << channel << std::endl;
-			if (_clients[clientFd].curchannel == channel) {
-				_clients[clientFd].curchannel = _clients[clientFd].channels.empty() ? "" : _clients[clientFd].channels.back().channelName;
+for (std::vector<Channel>::iterator it = channelsIRC.begin(); it != channelsIRC.end(); ++it) {
+	if (it->channelName == channel) {
+		bool memberFound = false;
+		bool userToKickFound = false;
+		for (std::vector<std::string>::iterator memberIt = it->members.begin(); memberIt != it->members.end(); ++memberIt) {
+			if (*memberIt == _clients[clientFd].nickname) {
+				memberFound = true;
 			}
+			if (*memberIt == nick) {
+				userToKickFound = true;
+			}
+		}
+		if (!memberFound) {
+			sendMessage(clientFd, std::string(RED) + "Error: You are not a member of this channel.\n" + std::string(RESET));
 			return;
 		}
+		if (!userToKickFound) {
+			sendMessage(clientFd, std::string(RED) + "Error: No member with this nick in the channel.\n" + std::string(RESET));
+			return;
+		}
+		if (!_clients[clientFd].isOperator) {
+			sendMessage(clientFd, std::string(RED) + "Error: Permission denied.\n" + std::string(RESET));
+			return;
+		}
+		for (std::vector<std::string>::iterator memberIt = it->members.begin(); memberIt != it->members.end(); ++memberIt) {
+			if (*memberIt == nick) {
+				it->members.erase(memberIt);
+				sendMessage(clientFd, std::string(GREEN) + "User " + nick + " has been kicked from the channel " + channel + ".\n" + std::string(RESET));
+				return;
+			}
+		}
+		break;
 	}
-	if (!_clients[clientFd].isOperator) {
-		sendMessage(clientFd, std::string(RED) + "Error: Permission denied.\n" + std::string(RESET));
-		return ;
-	}
-
 }
+sendMessage(clientFd, std::string(RED) + "Error: The channel doesn't exist.\n" + std::string(RESET));
+}
+
 
 
 /****************************************************************************************************/

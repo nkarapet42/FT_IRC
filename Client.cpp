@@ -33,6 +33,24 @@ void    Client::setUsername(const std::string& user) {
 const std::string&  Client::getNickname() {
     return (nickname);
 }
+void    Client::createChannel(const std::string& channelName, const std::string& password) {
+    Channel newChannel;
+    newChannel.channelName = channelName;
+    newChannel.channelPass = password;
+    newChannel.havePass = !password.empty();
+    newChannel.members.push_back(nickname);
+    channelsIRC.push_back(newChannel);
+
+    std::cout << nickname << " created and joined channel: " << channelName << "\n";
+    curchannel = channelName;
+
+    Info newInfo;
+    newInfo.channelName = channelName;
+    newInfo.password = password;
+    newInfo.isOperator = true;
+    newInfo.members.push_back(nickname);
+    channels.push_back(newInfo);
+}
 
 void    Client::joinChannel(const std::string& channelName, const std::string& password) {
     for (size_t i = 0; i < channelsIRC.size(); i++) {
@@ -44,29 +62,23 @@ void    Client::joinChannel(const std::string& channelName, const std::string& p
             std::cout << nickname << " joined channel: " << channelName << "\n";
             curchannel = channelName;
 
+            for (size_t j = 0; j < channels.size(); j++) {
+                if (channels[j].channelName == channelName) {
+                    channels[j].members.push_back(nickname);
+                    return;
+                }
+            }
+
             Info newChannel;
             newChannel.channelName = channelName;
             newChannel.password = password;
             newChannel.isOperator = false;
+            newChannel.members.push_back(nickname);
             channels.push_back(newChannel);
             return ;
         }
     }
-
-    Channel newChannel;
-    newChannel.channelName = channelName;
-    newChannel.channelPass = password;
-    newChannel.havePass = !password.empty();
-    channelsIRC.push_back(newChannel);
-
-    std::cout << nickname << " created and joined channel: " << channelName << "\n";
-    curchannel = channelName;
-
-    Info newInfo;
-    newInfo.channelName = channelName;
-    newInfo.password = password;
-    newInfo.isOperator = true;
-    channels.push_back(newInfo);
+    createChannel(channelName, password);
 }
 
 

@@ -7,7 +7,7 @@
 struct Info {
 	std::string					channelName;
 	std::string					password;
-	std::vector<std::string>	users;
+	std::vector<std::string>	members;
 	bool						isOperator;
 };
 
