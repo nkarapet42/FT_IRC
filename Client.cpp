@@ -38,6 +38,7 @@ void    Client::createChannel(const std::string& channelName, const std::string&
     newChannel.channelName = channelName;
     newChannel.channelPass = password;
     newChannel.havePass = !password.empty();
+    newChannel.isTopic = false;
     newChannel.members.push_back(nickname);
     channelsIRC.push_back(newChannel);
 
@@ -82,7 +83,7 @@ void    Client::joinChannel(const std::string& channelName, const std::string& p
 }
 
 
-void Client::leaveChannel(const std::string& channel) {
+bool Client::leaveChannel(const std::string& channel) {
     for (size_t i = 0; i < channels.size(); ++i) {
         if (channels[i].channelName == channel) {
             channels.erase(channels.begin() + i);
@@ -90,10 +91,11 @@ void Client::leaveChannel(const std::string& channel) {
             if (curchannel == channel) {
                 curchannel = channels.empty() ? "" : channels.back().channelName;
             }
-            return;
+            return (true);
         }
     }
     std::cout << nickname << " You are not in channel: " << channel << std::endl;
+    return (false);
 }
 
 

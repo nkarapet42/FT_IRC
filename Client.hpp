@@ -29,7 +29,7 @@ public:
 	void				setUsername(const std::string& user);
 	void   				joinChannel(const std::string& channelName, const std::string& password);
 	void    			changeChannelPassword(const std::string& channelName, const std::string& newPassword);
-	void				leaveChannel(const std::string& channel);
+	bool				leaveChannel(const std::string& channel);
 	void    			createChannel(const std::string& channelName, const std::string& password);
 
 };

@@ -305,6 +305,88 @@ void Server::whoCommand(int clientFd, const std::string& line) {
     }
 }
 
+void Server::topicCommand(int clientFd, const std::string& line) {
+	std::stringstream ss(line);
+	std::string cmd, channelName;
+	ss >> cmd >> channelName;
+
+	if (channelName.empty()) {
+		sendMessage(clientFd, std::string(RED) + "ERROR: No channel specified.\n" + std::string(RESET));
+		sendMessage(clientFd, std::string(RED) + "Usage: TOPIC <channel> [topic].\n" + std::string(RESET));
+		return;
+	}
+	std::string topic;
+	std::getline(ss, topic);
+
+    Channel* channel = NULL;
+    for (std::vector<Channel>::iterator it = channelsIRC.begin(); it != channelsIRC.end(); ++it) {
+        if (it->channelName == channelName) {
+            channel = &(*it);
+            break;
+        }
+    }
+
+    if (!channel) {
+        sendMessage(clientFd, std::string(RED) + "ERROR: Channel not found.\n" + std::string(RESET));
+        return;
+    }
+
+    if (topic.empty()) {
+        std::string response = "TOPIC " + channelName + " :" + (channel->topic.empty() ? "No topic set." : channel->topic);
+        sendMessage(clientFd, std::string(CYAN) + response + "\n" + std::string(RESET));
+    } else {
+        Client& client = _clients[clientFd];
+        bool isOperator = false;
+        for (std::vector<Info>::iterator it = client.channels.begin(); it != client.channels.end(); ++it) {
+            if (it->channelName == channelName && it->isOperator) {
+                isOperator = true;
+                break;
+            }
+        }
+
+        if (!channel->isTopic || isOperator) {
+            channel->topic = topic;
+            std::string response = "TOPIC " + channelName + " :" + topic + "\n";
+            sendMessage(clientFd, std::string(CYAN) + response + std::string(RESET));
+            broadcastMessage(channelName, clientFd, std::string(CYAN) + response + std::string(RESET));
+        } else {
+            sendMessage(clientFd, std::string(RED) + "ERROR: You are not an operator of this channel.\n" + std::string(RESET));
+        }
+    }
+}
+
+void Server::partChannel(int clientFd, const std::string& line) {
+	std::stringstream ss(line);
+	std::string cmd, channelName;
+	ss >> cmd >> channelName;
+
+	if (channelName.empty()) {
+		sendMessage(clientFd, std::string(RED) + "ERROR: Wrong Syntax .\n" + std::string(RESET));
+		sendMessage(clientFd, std::string(RED) + "Usage: PART <channel> [message].\n" + std::string(RESET));
+        return;
+	}
+	std::string message;
+	std::getline(ss, message);
+	if (message.empty())
+		message += "GoodBye my Friend's";
+	Channel* channel = NULL;
+    for (std::vector<Channel>::iterator it = channelsIRC.begin(); it != channelsIRC.end(); ++it) {
+        if (it->channelName == channelName) {
+            channel = &(*it);
+            break;
+        }
+    }
+    if (!channel) {
+        sendMessage(clientFd, std::string(RED) + "ERROR: Channel not found.\n" + std::string(RESET));
+        return;
+    }
+	if (_clients[clientFd].leaveChannel(channelName)){
+		sendMessage(clientFd, std::string(GREEN) + "You left the channel.\n" + std::string(RESET));
+	} else {
+		sendMessage(clientFd, std::string(RED) + "You are not in channel.\n" + std::string(RESET));
+	}
+	broadcastMessage(channelName, clientFd, std::string(CYAN) + "Last words : " + message + "\n" + std::string(RESET));
+}
 
 /****************************************************************************************************/
 /****************************************************************************************************/
@@ -718,12 +800,14 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 	} else if (cmd == "PASS") {
 		ss >> password;
 		_clients[clientFd].changeChannelPassword(channelName, password);
-	}  else if (cmd == "LEAVE") {
-		_clients[clientFd].leaveChannel(channelName);
+	}  else if (cmd == "PART") {
+		partChannel(clientFd, line);
 	} else if (cmd == "PRIVMSG") {
 		privateMessage(clientFd, line);
 	} else if (cmd == "WHO") {
 		whoCommand(clientFd, line);
+	} else if (cmd == "TOPIC") {
+		topicCommand(clientFd, line);
 	} else if (cmd == "KICK") {
 		ss >> nick;
 		kick(clientFd, channelName, nick);

@@ -62,6 +62,8 @@ private:
 	void	kick(int clientFd, const std::string& line, const std::string& nick);
 	void	quitClient(int clientFd, const std::string& line);
 	void	whoCommand(int clientFd, const std::string& line);
+	void	topicCommand(int clientFd, const std::string& line);
+	void	partChannel(int clientFd, const std::string& line);
 
 	//BOT
 	void	botHelp(int clientFd, const std::string& line);
