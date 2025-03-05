@@ -63,7 +63,7 @@ void	Server::authenticateClient(int clientFd, const std::string& password) {
 		sendMessage(clientFd, std::string(GREEN) + "Authentication successful!\n" + std::string(RESET));
 		sendMessage(clientFd, "You can now send commands.\n");
 	} else {
-		sendMessage(clientFd, "Incorrect password, try again: ");
+		sendMessage(clientFd, std::string(RED) + "Incorrect password, try again.\n" + std::string(RESET));
 	}
 }
 
@@ -85,7 +85,7 @@ void	Server::acceptNewClient() {
 	_clients[clientFd] = Client(clientFd);
 
 
-	sendMessage(clientFd, std::string(PURPLE) + "Please authenticate by sending the password: " + std::string(RESET));
+	sendMessage(clientFd, std::string(PURPLE) + "Please authenticate by sending the password: PASS <password>\n" + std::string(RESET));
 	std::cout << "New client connected: FD " << clientFd << "\n";
 }
 
@@ -119,9 +119,22 @@ void	Server::handleClientMessage(int clientFd) {
 	if (_clients[clientFd].isAuthenticated){
 		handleClientCommands(clientFd, message);
 	} else {
-		authenticateClient(clientFd, message);
+		std::stringstream ss(message);
+		std::string cmd, pass_word;
+		ss >> cmd >> pass_word;
+
+		std::string restOfLine;
+		std::getline(ss, restOfLine);
+		if (pass_word.empty() || !restOfLine.empty()) {
+			sendMessage(clientFd, std::string(RED) + "Error: PASS <password>.\n" + std::string(RESET));
+		} else if (cmd == "PASS") {
+			authenticateClient(clientFd, pass_word);
+		} else {
+			sendMessage(clientFd, std::string(RED) + "Error: PASS <password>.\n" + std::string(RESET));
+		}
 	}
 }
+
 void	Server::setUsername(int clientFd, const std::string& user) {
 	if (user.empty()) {
 		sendMessage(clientFd, std::string(RED) + "Error: Username cannot be empty.\n" + std::string(RESET));
