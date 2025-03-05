@@ -50,6 +50,8 @@ void    Client::createChannel(const std::string& channelName, const std::string&
     newInfo.isOperator = true;
     newInfo.members.push_back(nickname);
     channels.push_back(newInfo);
+
+    this->isOperator = true;
 }
 
 void    Client::joinChannel(const std::string& channelName, const std::string& password) {
@@ -65,6 +67,10 @@ void    Client::joinChannel(const std::string& channelName, const std::string& p
             for (size_t j = 0; j < channels.size(); j++) {
                 if (channels[j].channelName == channelName) {
                     channels[j].members.push_back(nickname);
+
+                    if (channels[j].members[0] == nickname) {
+                        this->isOperator = true;
+                    }
                     return;
                 }
             }
