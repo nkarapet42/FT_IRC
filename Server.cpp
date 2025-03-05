@@ -156,7 +156,7 @@ void	Server::Message(int clientFd, const std::string& line) {
 		sendMessage(clientFd, std::string(RED) + "Error: No message provided.\n" + std::string(RESET));
 }
 
-void	Server::privateMessage(int clientFd, const std::string& line) {
+void	Server::privateNoticeMessage(int clientFd, const std::string& line) {
 	std::stringstream ss(line);
 	std::string cmd, client, message;
 	ss >> cmd >> client;
@@ -170,7 +170,7 @@ void	Server::privateMessage(int clientFd, const std::string& line) {
 	if (!message.empty()) {
 		for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
 			if (it->second.nickname == client) {
-				sendMessage(it->second.fd, std::string(CYAN) + "PRIVMSG : [ " + _clients[clientFd].nickname +" -> " + client + " ]: " + message + "\n" + std::string(RESET));
+				sendMessage(it->second.fd, std::string(CYAN) + cmd + " : [ " + _clients[clientFd].nickname +" -> " + client + " ]: " + message + "\n" + std::string(RESET));
 				return;
 			}
 		}
@@ -823,8 +823,8 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 		_clients[clientFd].changeChannelPassword(channelName, password);
 	}  else if (cmd == "PART") {
 		partChannel(clientFd, line);
-	} else if (cmd == "PRIVMSG") {
-		privateMessage(clientFd, line);
+	} else if (cmd == "PRIVMSG" || cmd == "NOTICE") {
+		privateNoticeMessage(clientFd, line);
 	} else if (cmd == "WHO") {
 		whoCommand(clientFd, line);
 	} else if (cmd == "TOPIC") {
