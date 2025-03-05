@@ -7,16 +7,20 @@
 # include <unistd.h>
 # include <iostream>
 # include <cstring>
+# include <iomanip>
 # include <cstdlib>
+# include <fstream>
 # include <sstream>
 # include <string>
 # include <vector>
 # include <string>
 # include <poll.h>
+# include <ctime>
 # include <set>
 # include <map>
 # include "Client.hpp"
 # include "Channel.hpp"
+# include "FileTransfer.hpp"
 
 using std::cout;
 using std::cin;
@@ -39,9 +43,14 @@ private:
 	std::map<int, Client>	_clients;
 	std::string				_password;
 
+	//Filetransfer
+	std::map<std::string, FileTransfer> activeTransfers;
+
+	//Constructors
 	Server(const Server& other);
 	Server& operator=(const Server& other);
 
+	//Commands
 	void	authenticateClient(int clientFd, const std::string& password);
 	void	sendMessage(int clientFd, const std::string& message);
 	void	broadcastMessage(const std::string& channelName, int senderFd, const std::string& message);
@@ -59,10 +68,17 @@ private:
 	void	sendTime(int clientFd, const std::string& line);
 	void	sendWeather(int clientFd, const std::string& line);
 
+	//FILE_TRANSFER
+	void	dccSend(int senderFd, const std::string& line);
+	void	dccGet(int receiverFd, const std::string& line);
+	void	connectToSender(int receiverFd, const FileTransfer& transfer);
+	void	startFileTransfer(int receiverFd, const std::string& filename, size_t fileSize);
+
 public:
 	Server(int port, const std::string& password);
 	~Server();
 
+	//ServerSideCommands
 	void		run();
 	void		join(int clientFd, const std::string& channelNAme, const std::string& password);
 	void		acceptNewClient();
