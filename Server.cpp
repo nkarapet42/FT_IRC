@@ -186,11 +186,15 @@ for (std::vector<Channel>::iterator it = channelsIRC.begin(); it != channelsIRC.
 		bool memberFound = false;
 		bool userToKickFound = false;
 		for (std::vector<std::string>::iterator memberIt = it->members.begin(); memberIt != it->members.end(); ++memberIt) {
+			sendMessage(clientFd, std::string(YELLOW) + *memberIt +".\n" + std::string(RESET));
 			if (*memberIt == _clients[clientFd].nickname) {
+
 				memberFound = true;
 			}
 			if (*memberIt == nick) {
 				userToKickFound = true;
+			// sendMessage(clientFd, std::string(RED) + *memberIt +".\n" + std::string(RESET));
+
 			}
 		}
 		if (!memberFound) {
