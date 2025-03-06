@@ -32,3 +32,4 @@ public:
 	void    			createChannel(const std::string& channelName, const std::string& password);
 
 };
+

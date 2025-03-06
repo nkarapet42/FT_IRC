@@ -36,6 +36,7 @@ void	Server::invite(int clientFd, const std::string& channel, const std::string&
 				sendMessage(clientFd, std::string(RED) + "Error: User not found.\n" + std::string(RESET));
 				return;
 			}
+			it->invited.push_back(nick);
 			sendMessage(clientFd, std::string(GREEN) + "User " + nick + " has been invited to the channel " + channel + ".\n" + std::string(RESET));
 			sendMessage(inviteeFd, std::string(CYAN) + "You have been invited to join channel " + channel + " by " + _clients[clientFd].nickname + ".\n" + std::string(RESET));
 			return;
@@ -45,31 +46,43 @@ void	Server::invite(int clientFd, const std::string& channel, const std::string&
 }
 
 void	Server::join(int clientFd, const std::string& channelName, const std::string& password) {
-    if (_clients[clientFd].curchannel == channelName) {
-        sendMessage(clientFd, std::string(RED) + "Error: You are already in the channel.\n" + std::string(RESET));
-        return ;
-    }
-    if (_clients[clientFd].getNickname().empty()) {
-        sendMessage(clientFd, std::string(RED) + "Error: Please add a nickname, then try to join.\n" + std::string(RESET));
-        return ;
-    }
-    for (size_t i = 0; i < channelsIRC.size(); i++) {
-        if (channelsIRC[i].channelName == channelName) {
-            if (channelsIRC[i].havePass && channelsIRC[i].channelPass != password) {
-                sendMessage(clientFd, std::string(RED) + "Error: Incorrect password. Access denied.\n" + std::string(RESET));
-                return ;
-            }
-            if (!channelsIRC[i].havePass && !password.empty()) {
-                sendMessage(clientFd, std::string(RED) + "Error: This channel does not have password, try without passWord.\n" + std::string(RESET));
-                return ;
-            }
-            sendMessage(clientFd,  std::string(CYAN) + _clients[clientFd].getNickname() + " joined channel: " + channelName + "\n" +  std::string(RESET));
-            _clients[clientFd].joinChannel(channelName, password);
-            return ;
-        }
-    }
-    sendMessage(clientFd,  std::string(CYAN) + _clients[clientFd].getNickname() + " created and joined channel: " + channelName + "\n" + std::string(RESET));
-    _clients[clientFd].joinChannel(channelName, password);
+	if (_clients[clientFd].curchannel == channelName) {
+		sendMessage(clientFd, std::string(RED) + "Error: You are already in the channel.\n" + std::string(RESET));
+		return ;
+	}
+	if (_clients[clientFd].getNickname().empty()) {
+		sendMessage(clientFd, std::string(RED) + "Error: Please add a nickname, then try to join.\n" + std::string(RESET));
+		return ;
+	}
+	if (channelName.empty()) {
+		sendMessage(clientFd, std::string(RED) + "Error: Channel name cannot be empty.\n" + std::string(RESET));
+		return ;
+	}
+	for (size_t i = 0; i < channelsIRC.size(); i++) {
+		if (channelsIRC[i].channelName == channelName) {
+			if (channelsIRC[i].haveLimit && channelsIRC[i].members.size() >= static_cast<std::vector<std::string>::size_type>(channelsIRC[i].limit)) {
+				sendMessage(clientFd, std::string(RED) + "Error: Channel is full.\n" + std::string(RESET));
+				return ;
+			}
+			if (channelsIRC[i].isInviteOnly && !channelsIRC[i].isUserInvited(_clients[clientFd].getNickname())) {
+				sendMessage(clientFd, std::string(RED) + "Error: This channel is invite-only.\n" + std::string(RESET));
+				return ;
+			}
+			if (channelsIRC[i].havePass && channelsIRC[i].channelPass != password) {
+				sendMessage(clientFd, std::string(RED) + "Error: Incorrect password. Access denied.\n" + std::string(RESET));
+				return ;
+			}
+			if (!channelsIRC[i].havePass && !password.empty()) {
+				sendMessage(clientFd, std::string(RED) + "Error: This channel does not have password, try without passWord.\n" + std::string(RESET));
+				return ;
+			}
+			sendMessage(clientFd,  std::string(CYAN) + _clients[clientFd].getNickname() + " joined channel: " + channelName + "\n" +  std::string(RESET));
+			_clients[clientFd].joinChannel(channelName, password);
+			return ;
+		}
+	}
+	sendMessage(clientFd,  std::string(CYAN) + _clients[clientFd].getNickname() + " created and joined channel: " + channelName + "\n" + std::string(RESET));
+	_clients[clientFd].joinChannel(channelName, password);
 }
 
 void	Server::modeCommand(int clientFd, const std::string& channel, const std::string& mode, const std::string& param) {
@@ -80,6 +93,7 @@ void	Server::modeCommand(int clientFd, const std::string& channel, const std::st
 				return;
 			}
 			if (mode == "i") {
+				it->isInviteOnly = !it->isInviteOnly;
 				it->havePass = !it->havePass;
 				sendMessage(clientFd, std::string(GREEN) + "Invite-only mode " + (it->havePass ? "enabled" : "disabled") + " for channel " + channel + ".\n" + std::string(RESET));
 			}
@@ -111,16 +125,16 @@ void	Server::modeCommand(int clientFd, const std::string& channel, const std::st
 				}
 			}
 			else if (mode == "l") {
+				it->haveLimit = !it->haveLimit;
 				if (param.empty()) {
 					sendMessage(clientFd, std::string(RED) + "Error: No user limit provided for mode +l.\n" + std::string(RESET));
 					return;
 				}
-				int limit = std::atoi(param.c_str());
-				if (limit <= 0) {
+				it->limit = std::atoi(param.c_str());
+				if (it->limit <= 0) {
 					sendMessage(clientFd, std::string(RED) + "Error: Invalid user limit.\n" + std::string(RESET));
 					return;
 				}
-				it->members.resize(limit);
 				sendMessage(clientFd, std::string(GREEN) + "User limit set to " + param + " for channel " + channel + ".\n" + std::string(RESET));
 			}
 			else {
@@ -131,3 +145,4 @@ void	Server::modeCommand(int clientFd, const std::string& channel, const std::st
 	}
 	sendMessage(clientFd, std::string(RED) + "Error: Channel not found.\n" + std::string(RESET));
 }
+

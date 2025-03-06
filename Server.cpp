@@ -200,6 +200,13 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 	} else if (cmd == "JOIN") {
 		ss >> password;
 		join(clientFd, channelName, password);
+	}  else if (cmd == "INVITE") {
+		ss >> nick;
+		invite(clientFd, channelName, nick);
+	} else if (cmd == "MODE") {
+		std::string mode, param;
+		ss >> mode >> param;
+		modeCommand(clientFd, channelName, mode, param);
 	} else if (cmd == "NICK") {
 		changeNickname(clientFd, channelName);
 	} else if (cmd == "QUIT") {
@@ -230,13 +237,6 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 		botCommandsCall(clientFd, line);
 	} else if (!_clients[clientFd].curchannel.empty()) {
 		Message(clientFd, line);
-	} else if (cmd == "INVITE") {
-		ss >> nick;
-		invite(clientFd, channelName, nick);
-	} else if (cmd == "MODE") {
-		std::string mode, param;
-		ss >> mode >> param;
-		modeCommand(clientFd, channelName, mode, param);
 	} else {
 		sendMessage(clientFd, std::string(RED) + "Unknown command: " + std::string(RESET) + cmd + "\n");
 		sendMessage(clientFd, std::string(PURPLE) + "Use !HELP to know more about commands" + std::string(RESET) + "\n");

@@ -3,6 +3,7 @@
 # include <sys/socket.h>
 # include <netinet/in.h>
 # include <arpa/inet.h>
+# include <algorithm>
 # include <unistd.h>
 # include <iostream>
 # include <cstring>

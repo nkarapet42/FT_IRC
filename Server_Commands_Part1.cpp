@@ -150,3 +150,4 @@ void	Server::kick(int clientFd, const std::string& channel, const std::string& n
 	}
 	sendMessage(clientFd, std::string(RED) + "Error: The channel doesn't exist.\n" + std::string(RESET));
 }
+
