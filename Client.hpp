@@ -3,6 +3,7 @@
 
 # include "Info.hpp"
 # include <string>
+# include <algorithm>
 # include <vector>
 # include "Channel.hpp"
 

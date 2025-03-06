@@ -18,6 +18,7 @@
 # include <ctime>
 # include <set>
 # include <map>
+# include <algorithm>
 # include "Client.hpp"
 # include "Channel.hpp"
 # include "FileTransfer.hpp"

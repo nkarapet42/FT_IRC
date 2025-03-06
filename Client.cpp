@@ -39,6 +39,8 @@ void    Client::createChannel(const std::string& channelName, const std::string&
     newChannel.channelPass = password;
     newChannel.havePass = !password.empty();
     newChannel.isTopic = false;
+    newChannel.haveLimit = false;
+    newChannel.isInviteOnly = false;
     newChannel.members.push_back(nickname);
     channelsIRC.push_back(newChannel);
 
@@ -51,14 +53,32 @@ void    Client::createChannel(const std::string& channelName, const std::string&
     newInfo.isOperator = true;
     newInfo.members.push_back(nickname);
     channels.push_back(newInfo);
+
+    this->isOperator = true;
 }
 
 void    Client::joinChannel(const std::string& channelName, const std::string& password) {
     for (size_t i = 0; i < channelsIRC.size(); i++) {
         if (channelsIRC[i].channelName == channelName) {
-            if (channelsIRC[i].havePass && channelsIRC[i].channelPass != password) {
-                std::cout << "Incorrect password. Access denied.\n";
-                return ;
+            if (channelsIRC[i].havePass) {
+                if (channelsIRC[i].isUserInvited(nickname)) {
+                    std::cout << nickname << " joined channel: " << channelName << "\n";
+                    curchannel = channelName;
+                    for (size_t j = 0; j < channels.size(); j++) {
+                        if (channels[j].channelName == channelName) {
+                            channels[j].members.push_back(nickname);
+
+                            if (channels[j].members[0] == nickname) {
+                                this->isOperator = true;
+                            }
+                            return;
+                        }
+                    }
+                }
+                if (channelsIRC[i].channelPass != password) {
+                    std::cout << "Incorrect password. Access denied.\n";
+                    return ;
+                }
             }
             std::cout << nickname << " joined channel: " << channelName << "\n";
             curchannel = channelName;
@@ -66,6 +86,11 @@ void    Client::joinChannel(const std::string& channelName, const std::string& p
             for (size_t j = 0; j < channels.size(); j++) {
                 if (channels[j].channelName == channelName) {
                     channels[j].members.push_back(nickname);
+
+                    if (channels[j].members[0] == nickname) {
+                        this->isOperator = true;
+                    }
+
                     return;
                 }
             }
@@ -73,7 +98,7 @@ void    Client::joinChannel(const std::string& channelName, const std::string& p
             Info newChannel;
             newChannel.channelName = channelName;
             newChannel.password = password;
-            newChannel.isOperator = false;
+            newChannel.isOperator = (channelsIRC[i].members[0] == nickname); 
             newChannel.members.push_back(nickname);
             channels.push_back(newChannel);
             return ;
@@ -82,22 +107,37 @@ void    Client::joinChannel(const std::string& channelName, const std::string& p
     createChannel(channelName, password);
 }
 
-
-bool Client::leaveChannel(const std::string& channel) {
+bool    Client::leaveChannel(const std::string& channel) {
     for (size_t i = 0; i < channels.size(); ++i) {
         if (channels[i].channelName == channel) {
+            std::vector<std::string>::iterator it = channels[i].members.begin();
+            while (it != channels[i].members.end()) {
+                if (*it == nickname) {
+                    it = channels[i].members.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+            if (channels[i].members.empty()) {
+                for (std::vector<Channel>::iterator ch_it = channelsIRC.begin(); ch_it != channelsIRC.end(); ++ch_it) {
+                    if (ch_it->channelName == channel) {
+                        channelsIRC.erase(ch_it);
+                        std::cout << "Channel " << channel << " has been deleted (no members left)." << std::endl;
+                        break;
+                    }
+                }
+            }
             channels.erase(channels.begin() + i);
             std::cout << nickname << " Left channel: " << channel << std::endl;
             if (curchannel == channel) {
                 curchannel = channels.empty() ? "" : channels.back().channelName;
             }
-            return (true);
+            return true;
         }
     }
     std::cout << nickname << " You are not in channel: " << channel << std::endl;
-    return (false);
+    return false;
 }
-
 
 void    Client::changeChannelPassword(const std::string& channelName, const std::string& newPassword) {
     for (size_t i = 0; i < channelsIRC.size(); i++) {
