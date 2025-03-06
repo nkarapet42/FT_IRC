@@ -65,33 +65,28 @@ void    Client::joinChannel(const std::string& channelName, const std::string& p
                 if (channelsIRC[i].isUserInvited(nickname)) {
                     std::cout << nickname << " joined channel: " << channelName << "\n";
                     curchannel = channelName;
-                    for (size_t j = 0; j < channels.size(); j++) {
-                        if (channels[j].channelName == channelName) {
-                            channels[j].members.push_back(nickname);
+                    channelsIRC[i].members.push_back(nickname);
 
-                            if (channels[j].members[0] == nickname) {
-                                this->isOperator = true;
-                            }
-                            return;
-                        }
+                    if (channelsIRC[i].members[0] == nickname) {
+                        this->isOperator = true;
                     }
+                    return;
                 }
-                if (channelsIRC[i].channelPass != password) {
-                    std::cout << "Incorrect password. Access denied.\n";
-                    return ;
-                }
+            }
+            if (channelsIRC[i].channelPass != password) {
+                std::cout << "Incorrect password. Access denied.\n";
+                return ;
             }
             std::cout << nickname << " joined channel: " << channelName << "\n";
             curchannel = channelName;
 
             for (size_t j = 0; j < channels.size(); j++) {
                 if (channels[j].channelName == channelName) {
-                    channels[j].members.push_back(nickname);
+                    channelsIRC[i].members.push_back(nickname);
 
-                    if (channels[j].members[0] == nickname) {
+                    if (channelsIRC[i].members[0] == nickname) {
                         this->isOperator = true;
                     }
-
                     return;
                 }
             }

@@ -45,6 +45,7 @@ void	Server::invite(int clientFd, const std::string& channel, const std::string&
 	sendMessage(clientFd, std::string(RED) + "Error: The channel doesn't exist.\n" + std::string(RESET));
 }
 
+
 void	Server::join(int clientFd, const std::string& channelName, const std::string& password) {
 	if (_clients[clientFd].curchannel == channelName) {
 		sendMessage(clientFd, std::string(RED) + "Error: You are already in the channel.\n" + std::string(RESET));
@@ -60,7 +61,7 @@ void	Server::join(int clientFd, const std::string& channelName, const std::strin
 	}
 	for (size_t i = 0; i < channelsIRC.size(); i++) {
 		if (channelsIRC[i].channelName == channelName) {
-			if (channelsIRC[i].haveLimit && channelsIRC[i].members.size() >= static_cast<std::vector<std::string>::size_type>(channelsIRC[i].limit)) {
+			if (channelsIRC[i].haveLimit &&channelsIRC [i].members.size() >= static_cast<std::vector<std::string>::size_type>(channelsIRC[i].limit)) {
 				sendMessage(clientFd, std::string(RED) + "Error: Channel is full.\n" + std::string(RESET));
 				return ;
 			}
