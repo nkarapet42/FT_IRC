@@ -6,6 +6,7 @@ INCLUDES =  Server.hpp \
 			Client.hpp \
 			Info.hpp \
 			Channel.hpp \
+			Bot.hpp \
 			FileTransfer.hpp
 
 CFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g3
@@ -13,6 +14,7 @@ CFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g3
 SRCS =  main.cpp \
 		Server.cpp \
 		Client.cpp \
+		Bot.cpp \
 		FileTransfer.cpp
 
 OBJS = $(SRCS:.cpp=.o)

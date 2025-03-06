@@ -1,5 +1,4 @@
-#ifndef CLIENT_HPP
-#define CLIENT_HPP
+#pragma once
 
 # include "Info.hpp"
 # include <string>
@@ -33,5 +32,3 @@ public:
 	void    			createChannel(const std::string& channelName, const std::string& password);
 
 };
-
-#endif

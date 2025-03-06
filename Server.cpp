@@ -409,198 +409,7 @@ void Server::partChannel(int clientFd, const std::string& line) {
 	broadcastMessage(channelName, clientFd, std::string(CYAN) + "Last words : " + message + "\n" + std::string(RESET));
 }
 
-/****************************************************************************************************/
-/****************************************************************************************************/
-/****************************************************************************************************/
-/****************************************************************************************************/
-/****************************************************************************************************/
 
-/*******************************************************
- *                        B O T                        *
- *                                                     *
- *   ____   _____   _____    ____    _____    _____    *
- *  | __ ) | ____| | ____|  | __ )  | ____|  | ____|   *
- *  |  _ \ |  _|   |  _|    |  _ \  |  _|    |  _|     *
- *  | |_) || |___  | |___   | |_) | | |___   | |___    *
- *  |____/ |_____| |_____|  |____/  |_____|  |_____|   *
- *                                                     *
- ******************************************************/
-
-
-void Server::botHelp(int clientFd, const std::string& line) {
-	std::stringstream ss(line);
-	std::string cmd;
-	ss >> cmd;
-
-	std::string restOfLine;
-	std::getline(ss, restOfLine);
-	if (!restOfLine.empty()) {
-		sendMessage(clientFd, std::string(RED) + "Error: The HELP command must be used without additional arguments.\n" + std::string(RESET));
-		return;
-	}
-
-	std::string helpMessage = "Inforamtion about Commands:\n";
-	helpMessage += "Note: <> means required, [] means optional.\n";
-	helpMessage += "JOIN <channel> [password] - Join a channel\n";
-	helpMessage += "KICK <channel> <nickname> - Kick a user from a channel\n";
-	helpMessage += "LEAVE <channel> - Leave a channel\n";
-	helpMessage += "NICK <nickname> - Set your nickname\n";
-	helpMessage += "PRIVMSG <nickname> <message> - Send private message\n";
-	helpMessage += "USER <username> - Set your username\n";
-	helpMessage += "Bot Commands Information:\n";
-	helpMessage += "HELP - Show this help message\n";
-	helpMessage += "MOTD - Get the message of the day \n";
-	helpMessage += "TIME - Get the current server time\n";
-	helpMessage += "WEATHER - Get a random weather forecast\n";
-
-	sendMessage(clientFd, std::string(YELLOW) + helpMessage + std::string(RESET));
-}
-
-void Server::sendMotd(int clientFd, const std::string& line) {
-	std::stringstream ss(line);
-	std::string cmd;
-	ss >> cmd;
-
-	std::string restOfLine;
-	std::getline(ss, restOfLine);
-	if (!restOfLine.empty()) {
-		sendMessage(clientFd, std::string(RED) + "Error: The MOTD command must be used without additional arguments.\n" + std::string(RESET));
-		return;
-	}
-    time_t now = time(0);
-    struct tm *timeInfo = localtime(&now);
-    int hour = timeInfo->tm_hour;
-
-    std::string greeting;
-    if (hour < 12) {
-        greeting = "Good morning! Have a great day ahead!";
-    } else if (hour < 18) {
-        greeting = "Good afternoon! Keep up the good work!";
-    } else {
-        greeting = "Good evening! Hope you’re having a good time!";
-    }
-
-    std::vector<std::string> quotes;
-    quotes.push_back("The only way to do great work is to love what you do. - Steve Jobs");
-    quotes.push_back("Success is not final, failure is not fatal: It is the courage to continue that counts. - Winston Churchill");
-    quotes.push_back("Life is what happens when you're busy making other plans. - John Lennon");
-    quotes.push_back("To be yourself in a world that is constantly trying to make you something else is the greatest accomplishment. - Ralph Waldo Emerson");
-
-    srand(time(0));
-    int randomIndex = rand() % quotes.size();
-
-    std::string motd = greeting + "\n\n";
-    motd += "Here's a random quote for you:\n";
-    motd += "\"" + quotes[randomIndex] + "\"";
-
-    sendMessage(clientFd, std::string(PURPLE) + motd + "\n" + std::string(RESET));
-}
-
-void Server::sendTime(int clientFd, const std::string& line) {
-	std::stringstream ss(line);
-	std::string cmd;
-	ss >> cmd;
-
-	std::string restOfLine;
-	std::getline(ss, restOfLine);
-	if (!restOfLine.empty()) {
-		sendMessage(clientFd, std::string(RED) + "Error: The TIME command must be used without additional arguments.\n" + std::string(RESET));
-		return;
-	}
-
-    time_t now = time(0);
-    std::string timeStr = ctime(&now);
-    sendMessage(clientFd, std::string(GREEN) + "Current time: " + timeStr + std::string(RESET));
-}
-
-static std::string getRandomWeather() {
-    std::vector<std::string> weatherTypes;
-	weatherTypes.push_back("Clear");
-	weatherTypes.push_back("Clouds");
-	weatherTypes.push_back("Mist");
-	weatherTypes.push_back("Snow");
-	weatherTypes.push_back("Rain");
-
-	srand(time(0));
-    int randomIndex = rand() % weatherTypes.size();
-    return weatherTypes[randomIndex];
-}
-
-static std::vector<std::string> getWeatherArt(const std::string& weather) {
-    std::vector<std::string> res(5, "");
-
-    if (weather == "Clear") {
-        res[0] = "     \\   /     ";
-        res[1] = "      .-.      ";
-        res[2] = "   ― (   ) ―   ";
-        res[3] = "      `-’      ";
-        res[4] = "     /   \\     ";
-    }
-    else if (weather == "Clouds") {
-        res[0] = "               ";
-        res[1] = "      .--.     ";
-        res[2] = "   .-(    ).   ";
-        res[3] = "  (  .  )  )   ";
-        res[4] = "   ‾‾ ‾‾ ‾‾    ";
-    }
-    else if (weather == "Mist") {
-        res[0] = "               ";
-        res[1] = "    -   -   -  ";
-        res[2] = "  ‾  -‾  -‾    ";
-        res[3] = "   ‾-  ‾-  ‾-  ";
-        res[4] = "  ‾   ‾   ‾    ";
-    }
-    else if (weather == "Snow") {
-        res[0] = "      .-.      ";
-        res[1] = "     (   ).    ";
-        res[2] = "    (__(__)    ";
-        res[3] = "    * * * *    ";
-        res[4] = "   * * * *     ";
-    }
-    else if (weather == "Rain") {
-        res[0] = "      .-.      ";
-        res[1] = "     (   ).    ";
-        res[2] = "    (___(__)   ";
-        res[3] = "   ‚‘‚‘‚‘‚‘    ";
-        res[4] = "   ‚’‚’‚’‚’    ";
-    }
-    else {
-        res[0] = "               ";
-        res[1] = "               ";
-        res[2] = "               ";
-        res[3] = "               ";
-        res[4] = "               ";
-    }
-
-    return res;
-}
-
-void Server::sendWeather(int clientFd, const std::string& line) {
-	std::stringstream ss(line);
-	std::string cmd, location;
-	ss >> cmd >> location;
-
-	if (location.empty()) {
-		sendMessage(clientFd, std::string(RED) + "Error: The WEATHER command must be used with location.\n" + std::string(RESET));
-		return;
-	}
-	std::string restOfLine;
-	std::getline(ss, restOfLine);
-	if (!restOfLine.empty()) {
-		sendMessage(clientFd, std::string(RED) + "Error: The WEATHER command must be used only with one argument.\n" + std::string(RESET));
-		return;
-	}
-
-    std::string randomWeather = getRandomWeather();
-
-    std::vector<std::string> weatherArt = getWeatherArt(randomWeather);
-
-    std::string weatherInfo = "Weather Forecast at " + location + " : " + randomWeather + "\n";
-    for (std::vector<std::string>::iterator it = weatherArt.begin(); it != weatherArt.end(); ++it) {
-		weatherInfo += *it + "\n";
-	}
-    sendMessage(clientFd, weatherInfo);
-}
 
 /*******************************************************
  *                   B O T  E N D                      *
@@ -792,12 +601,28 @@ void Server::dccGet(int receiverFd, const std::string& line) {
     activeTransfers.erase(it);
 }
 
+void Server::botCommandsCall(int clientFd, const std::string& line) {
+	std::stringstream ss(line);
+    std::string cmd;
+    ss >> cmd;
 
-/****************************************************************************************************/
-/****************************************************************************************************/
-/****************************************************************************************************/
-/****************************************************************************************************/
-/****************************************************************************************************/
+	if (!_clients[clientFd].curchannel.empty()) {
+		if (cmd == "!HELP"){
+			_bot.botHelp(clientFd, *this, line);
+		} else if (cmd == "!MOTD") {
+			_bot.sendMotd(clientFd, *this, line);
+		} else if (cmd == "!TIME") {
+			_bot.sendTime(clientFd, *this, line);	
+		} else if (cmd == "!WEATHER") {
+			_bot.sendWeather(clientFd, *this, line);
+		} else {
+			sendMessage(clientFd, std::string(RED) + "Unknown Bot command: " + std::string(RESET) + cmd + "\n");
+		}
+	} else {
+		sendMessage(clientFd, std::string(RED) + "You are not in the channel,for using Bot!!!!\n" + std::string(RESET));
+		sendMessage(clientFd, std::string(PURPLE) + "Suggest : Use 'JOIN <channel> [password]'\n" + std::string(RESET));
+	}
+}
 
 void Server::handleClientCommands(int clientFd, const std::string& line) {
 	std::stringstream ss(line);
@@ -840,14 +665,8 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 		} else {
 			sendMessage(clientFd, std::string(RED) + "Usage: DCC SEND or DCC GET\n" + std::string(RESET));
 		}
-	} else if (cmd == "HELP") {
-		botHelp(clientFd, line);
-	} else if (cmd == "MOTD") {
-		sendMotd(clientFd, line);
-	} else if (cmd == "TIME") {
-		sendTime(clientFd, line);
-	} else if (cmd == "WEATHER") {
-		sendWeather(clientFd, line);
+	} else if (cmd[0] == '!') {
+		botCommandsCall(clientFd, line);
 	} else if (!_clients[clientFd].curchannel.empty()) {
 		Message(clientFd, line);
 	} else if (cmd == "INVITE") {
@@ -859,7 +678,7 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 		modeCommand(clientFd, channelName, mode, param);
 	} else {
 		sendMessage(clientFd, std::string(RED) + "Unknown command: " + std::string(RESET) + cmd + "\n");
-		sendMessage(clientFd, std::string(PURPLE) + "Use HELP to know more about commands" + std::string(RESET) + "\n");
+		sendMessage(clientFd, std::string(PURPLE) + "Use !HELP to know more about commands" + std::string(RESET) + "\n");
 	}
 }
 

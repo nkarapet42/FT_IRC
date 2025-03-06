@@ -1,5 +1,4 @@
-#ifndef INFO_HPP
-# define INFO_HPP
+#pragma once
 
 # include <iostream>
 # include <vector>
@@ -10,5 +9,3 @@ struct Info {
 	std::vector<std::string>	members;
 	bool						isOperator;
 };
-
-#endif

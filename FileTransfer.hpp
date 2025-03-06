@@ -1,7 +1,8 @@
-#ifndef FILETRANSFER_HPP
-#define FILETRANSFER_HPP
+#pragma once
 
 #include <string>
+
+class Server;
 
 class FileTransfer {
 public:
@@ -15,6 +16,10 @@ public:
 	FileTransfer(const FileTransfer& other);
     FileTransfer& operator=(const FileTransfer& other);
 	~FileTransfer();
-};
 
-#endif
+	void	dccSend(int senderFd, Server& server, const std::string& line);
+	void	dccGet(int receiverFd, Server& server, const std::string& line);
+	void	connectToSender(int receiverFd, Server& server, const FileTransfer& transfer);
+	void	startFileTransfer(int receiverFd, Server& server, const std::string& filename, size_t fileSize);
+	
+};

@@ -1,4 +1,5 @@
 #include "FileTransfer.hpp"
+#include "Server.hpp"
 
 FileTransfer::FileTransfer()
     : senderFd(-1), receiverFd(-1), fileSize(0) {}

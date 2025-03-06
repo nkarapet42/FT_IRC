@@ -1,5 +1,4 @@
-#ifndef CHANEL_HPP
-# define CHANEL_HPP
+#pragma once
 
 # include <iostream>
 # include <vector>
@@ -12,5 +11,3 @@ struct Channel {
 	bool						havePass;
 	bool						isTopic;
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef SERVER_HPP
-# define SERVER_HPP
+#pragma once
 
 # include <sys/socket.h>
 # include <netinet/in.h>
@@ -21,6 +20,7 @@
 # include "Client.hpp"
 # include "Channel.hpp"
 # include "FileTransfer.hpp"
+# include "Bot.hpp"
 
 using std::cout;
 using std::cin;
@@ -42,6 +42,7 @@ private:
 	std::vector<pollfd>		_pollFds;
 	std::map<int, Client>	_clients;
 	std::string				_password;
+	Bot						_bot;
 
 	//Filetransfer
 	std::map<std::string, FileTransfer> activeTransfers;
@@ -50,9 +51,11 @@ private:
 	Server(const Server& other);
 	Server& operator=(const Server& other);
 
+	//Bot
+	void	botCommandsCall(int clientFd, const std::string& line);
+
 	//Commands
 	void	authenticateClient(int clientFd, const std::string& password);
-	void	sendMessage(int clientFd, const std::string& message);
 	void	broadcastMessage(const std::string& channelName, int senderFd, const std::string& message);
 	void	handleClientCommands(int clientFd, const std::string& command);
 	void	changeNickname(int clientFd, const std::string& newNick);
@@ -67,28 +70,21 @@ private:
 	void	invite(int clientFd, const std::string& channel, const std::string& nick);
 	void	modeCommand(int clientFd, const std::string& channel, const std::string& mode, const std::string& param);
 
-	//BOT
-	void	botHelp(int clientFd, const std::string& line);
-	void	sendMotd(int clientFd, const std::string& line);
-	void	sendTime(int clientFd, const std::string& line);
-	void	sendWeather(int clientFd, const std::string& line);
-
 	//FILE_TRANSFER
 	void	dccSend(int senderFd, const std::string& line);
 	void	dccGet(int receiverFd, const std::string& line);
 	void	connectToSender(int receiverFd, const FileTransfer& transfer);
 	void	startFileTransfer(int receiverFd, const std::string& filename, size_t fileSize);
-
-public:
+	
+	public:
 	Server(int port, const std::string& password);
 	~Server();
-
+	
 	//ServerSideCommands
 	void		run();
-	void		join(int clientFd, const std::string& channelNAme, const std::string& password);
 	void		acceptNewClient();
 	void		handleClientMessage(int clientFd);
-
+	void		join(int clientFd, const std::string& channelNAme, const std::string& password);
+	void		sendMessage(int clientFd, const std::string& message);
+	
 };
-
-#endif
