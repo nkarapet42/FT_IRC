@@ -64,6 +64,8 @@ private:
 	void	whoCommand(int clientFd, const std::string& line);
 	void	topicCommand(int clientFd, const std::string& line);
 	void	partChannel(int clientFd, const std::string& line);
+	void	invite(int clientFd, const std::string& channel, const std::string& nick);
+	void	modeCommand(int clientFd, const std::string& channel, const std::string& mode, const std::string& param);
 
 	//BOT
 	void	botHelp(int clientFd, const std::string& line);
