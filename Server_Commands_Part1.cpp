@@ -25,9 +25,14 @@ void Server::quitClient(int clientFd, const std::string& line) {
 	for (size_t i = 0; i < it->second.channels.size(); ++i) {
 		it->second.leaveChannel(it->second.channels[i].channelName);
 	}
-
-	close(clientFd);
+	std::cout << "Client disconnected: FD " << clientFd << "\n";
+	for (std::map<std::string, FileTransfer>::iterator it = activeTransfers.begin(); it != activeTransfers.end(); ++it) {
+		if (it->second.senderFd == clientFd) {
+			activeTransfers.erase(it);
+		} 
+	}
 	_clients.erase(it);
+	close(clientFd);
 }
 
 void	Server::setUsername(int clientFd, const std::string& user) {

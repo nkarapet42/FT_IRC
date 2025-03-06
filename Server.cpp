@@ -109,6 +109,12 @@ void	Server::handleClientMessage(int clientFd) {
 		} else {
 			std::cerr << "Error: recv failed for FD " << clientFd << "\n";
 		}
+		for (std::map<std::string, FileTransfer>::iterator it = activeTransfers.begin(); it != activeTransfers.end(); ++it) {
+			if (it->second.senderFd == clientFd) {
+				activeTransfers.erase(it);
+			} 
+		}
+    	_clients.erase(clientFd);
 		close(clientFd);
 		for (std::vector<pollfd>::iterator it = _pollFds.begin(); it != _pollFds.end(); ) {
 			if (it->fd == clientFd) {

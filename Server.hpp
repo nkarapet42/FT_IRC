@@ -44,7 +44,6 @@ private:
 	std::string				_password;
 	Bot						_bot;
 
-	//Server_Transfer
 	/***************Server_Transfer****************/
 	std::map<std::string, FileTransfer> activeTransfers;
 
