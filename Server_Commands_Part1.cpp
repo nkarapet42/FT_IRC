@@ -91,63 +91,74 @@ void	Server::privateNoticeMessage(int clientFd, const std::string& line) {
 	else
 		sendMessage(clientFd, std::string(RED) + "Error: No message provided.\n" + std::string(RESET));
 }
+void Server::kick(int clientFd, const std::string& channel, const std::string& nick) {
+    for (std::vector<Channel>::iterator it = channelsIRC.begin(); it != channelsIRC.end(); ++it) {
+        if (it->channelName == channel) {
+            bool memberFound = false;
+            bool userToKickFound = false;
 
-void	Server::kick(int clientFd, const std::string& channel, const std::string& nick) {
-	for (std::vector<Channel>::iterator it = channelsIRC.begin(); it != channelsIRC.end(); ++it) {
-		if (it->channelName == channel) {
-			bool memberFound = false;
-			bool userToKickFound = false;
-			for (std::vector<std::string>::iterator memberIt = it->members.begin(); memberIt != it->members.end(); ++memberIt) {
-				if (*memberIt == _clients[clientFd].nickname) {
-					memberFound = true;
-				}
-				if (*memberIt == nick) {
-					userToKickFound = true;
-				}
-			}
-			if (!memberFound) {
-				sendMessage(clientFd, std::string(RED) + "Error: You are not a member of this channel.\n" + std::string(RESET));
-				return;
-			}
-			if (!userToKickFound) {
-				sendMessage(clientFd, std::string(RED) + "Error: No member with this nick in the channel.\n" + std::string(RESET));
-				return;
-			}
-			if (nick == _clients[clientFd].nickname) {
-				sendMessage(clientFd, std::string(RED) + "Error: You can't kick yourself.\n" + std::string(RESET));
-				return;
-			}
-			if (!_clients[clientFd].isOperator) {
-				sendMessage(clientFd, std::string(RED) + "Error: Permission denied.\n" + std::string(RESET));
-				return;
-			}
-			for (std::vector<std::string>::iterator memberIt = it->members.begin(); memberIt != it->members.end(); ++memberIt) {
-				if (*memberIt == nick) {
-					it->members.erase(memberIt);
-					break;
-				}
-			}
-			for (std::vector<Info>::iterator infoIt = _clients[clientFd].channels.begin(); infoIt != _clients[clientFd].channels.end(); ++infoIt) {
-				if (infoIt->channelName == channel) {
-					for (std::vector<std::string>::iterator memIt = infoIt->members.begin(); memIt != infoIt->members.end(); ++memIt) {
-						if (*memIt == nick) {
-							infoIt->members.erase(memIt);
-							break;
-						}
-					}
-				}
-			}
-			for (std::map<int, Client>::iterator clientIt = _clients.begin(); clientIt != _clients.end(); ++clientIt) {
-				if (clientIt->second.nickname == nick) {
-					clientIt->second.curchannel.clear();
-					break;
-				}
-			}
-			
-			sendMessage(clientFd, std::string(GREEN) + "User " + nick + " has been kicked from the channel " + channel + ".\n" + std::string(RESET));
-			return;
-		}
-	}
-	sendMessage(clientFd, std::string(RED) + "Error: The channel doesn't exist.\n" + std::string(RESET));
+            for (std::vector<std::string>::iterator memberIt = it->members.begin(); memberIt != it->members.end(); ++memberIt) {
+                if (*memberIt == _clients[clientFd].nickname) {
+                    memberFound = true;
+                }
+                if (*memberIt == nick) {
+                    userToKickFound = true;
+                }
+            }
+
+            if (!memberFound) {
+                sendMessage(clientFd, std::string(RED) + "Error: You are not a member of this channel.\n" + std::string(RESET));
+                return;
+            }
+            if (!userToKickFound) {
+                sendMessage(clientFd, std::string(RED) + "Error: No member with this nick in the channel.\n" + std::string(RESET));
+                return;
+            }
+            if (nick == _clients[clientFd].nickname) {
+                sendMessage(clientFd, std::string(RED) + "Error: You can't kick yourself.\n" + std::string(RESET));
+                return;
+            }
+            if (!_clients[clientFd].isOperator) {
+                sendMessage(clientFd, std::string(RED) + "Error: Permission denied.\n" + std::string(RESET));
+                return;
+            }
+
+            for (std::vector<std::string>::iterator memberIt = it->members.begin(); memberIt != it->members.end(); ++memberIt) {
+                if (*memberIt == nick) {
+                    it->members.erase(memberIt);
+                    break;
+                }
+            }
+
+            for (std::vector<Info>::iterator infoIt = _clients[clientFd].channels.begin(); infoIt != _clients[clientFd].channels.end(); ++infoIt) {
+                if (infoIt->channelName == channel) {
+                    for (std::vector<std::string>::iterator memIt = infoIt->members.begin(); memIt != infoIt->members.end(); ++memIt) {
+                        if (*memIt == nick) {
+                            infoIt->members.erase(memIt);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            for (std::map<int, Client>::iterator clientIt = _clients.begin(); clientIt != _clients.end(); ++clientIt) {
+                if (clientIt->second.nickname == nick) {
+                    clientIt->second.curchannel.clear();
+                    clientIt->second.isOperator = false;
+
+                    for (std::vector<Info>::iterator chIt = clientIt->second.channels.begin(); chIt != clientIt->second.channels.end(); ++chIt) {
+                        if (chIt->channelName == channel) {
+                            clientIt->second.channels.erase(chIt);
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+
+            sendMessage(clientFd, std::string(GREEN) + "User " + nick + " has been kicked from the channel " + channel + ".\n" + std::string(RESET));
+            return;
+        }
+    }
+    sendMessage(clientFd, std::string(RED) + "Error: The channel doesn't exist.\n" + std::string(RESET));
 }
-

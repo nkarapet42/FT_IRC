@@ -61,6 +61,12 @@ void    Client::createChannel(const std::string& channelName, const std::string&
 void    Client::joinChannel(const std::string& channelName, const std::string& password) {
     for (size_t i = 0; i < channelsIRC.size(); i++) {
         if (channelsIRC[i].channelName == channelName) {
+            for (size_t i = 0; i < channels.size(); i++) {
+                if (channels[i].channelName == channelName) {
+                    curchannel = channelName;
+                    return ;
+                }
+            }
             if (channelsIRC[i].havePass) {
                 if (channelsIRC[i].isUserInvited(nickname)) {
                     std::cout << nickname << " joined channel: " << channelName << "\n";
@@ -79,18 +85,11 @@ void    Client::joinChannel(const std::string& channelName, const std::string& p
             }
             std::cout << nickname << " joined channel: " << channelName << "\n";
             curchannel = channelName;
+            channelsIRC[i].members.push_back(nickname);
 
-            for (size_t j = 0; j < channels.size(); j++) {
-                if (channels[j].channelName == channelName) {
-                    channelsIRC[i].members.push_back(nickname);
-
-                    if (channelsIRC[i].members[0] == nickname) {
-                        this->isOperator = true;
-                    }
-                    return;
-                }
+            if (channelsIRC[i].members[0] == nickname) {
+                this->isOperator = true;
             }
-
             Info newChannel;
             newChannel.channelName = channelName;
             newChannel.password = password;
