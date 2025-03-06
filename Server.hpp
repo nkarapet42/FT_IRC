@@ -44,47 +44,55 @@ private:
 	std::string				_password;
 	Bot						_bot;
 
-	//Filetransfer
+	//Server_Transfer
+	/***************Server_Transfer****************/
 	std::map<std::string, FileTransfer> activeTransfers;
 
-	//Constructors
-	Server(const Server& other);
-	Server& operator=(const Server& other);
-
-	//Bot
-	void	botCommandsCall(int clientFd, const std::string& line);
-
-	//Commands
-	void	authenticateClient(int clientFd, const std::string& password);
-	void	broadcastMessage(const std::string& channelName, int senderFd, const std::string& message);
-	void	handleClientCommands(int clientFd, const std::string& command);
-	void	changeNickname(int clientFd, const std::string& newNick);
-	void	setUsername(int clientFd, const std::string& user);
-	void	Message(int clientFd, const std::string& line);
-	void	privateNoticeMessage(int clientFd, const std::string& line);
-	void	kick(int clientFd, const std::string& line, const std::string& nick);
-	void	quitClient(int clientFd, const std::string& line);
-	void	whoCommand(int clientFd, const std::string& line);
-	void	topicCommand(int clientFd, const std::string& line);
-	void	partChannel(int clientFd, const std::string& line);
-	void	invite(int clientFd, const std::string& channel, const std::string& nick);
-	void	modeCommand(int clientFd, const std::string& channel, const std::string& mode, const std::string& param);
-
-	//FILE_TRANSFER
 	void	dccSend(int senderFd, const std::string& line);
 	void	dccGet(int receiverFd, const std::string& line);
 	void	connectToSender(int receiverFd, const FileTransfer& transfer);
 	void	startFileTransfer(int receiverFd, const std::string& filename, size_t fileSize);
 	
-	public:
+	/****************Constructors*****************/
+	Server(const Server& other);
+	Server& operator=(const Server& other);
+
+	/********************BOT**********************/
+	void	botCommandsCall(int clientFd, const std::string& line);
+
+	/******************ServerSideCommands*************/
+	void	authenticateClient(int clientFd, const std::string& password);
+	void	broadcastMessage(const std::string& channelName, int senderFd, const std::string& message);
+	void	handleClientCommands(int clientFd, const std::string& command);
+	void	Message(int clientFd, const std::string& line);
+
+	/****************Server_Commands_Part1*****************/
+	void	quitClient(int clientFd, const std::string& line);
+	void	setUsername(int clientFd, const std::string& user);
+	void	changeNickname(int clientFd, const std::string& newNick);
+	void	privateNoticeMessage(int clientFd, const std::string& line);
+	void	kick(int clientFd, const std::string& line, const std::string& nick);
+	
+	/****************Server_Commands_Part2*****************/
+	void	whoCommand(int clientFd, const std::string& line);
+	void	partChannel(int clientFd, const std::string& line);
+	void	topicCommand(int clientFd, const std::string& line);
+
+	/****************Server_Commands_Part3*****************/
+	void	invite(int clientFd, const std::string& channel, const std::string& nick);
+	void	join(int clientFd, const std::string& channelNAme, const std::string& password);
+	void	modeCommand(int clientFd, const std::string& channel, const std::string& mode, const std::string& param);
+
+public:
+
+	/****************Constructors*****************/
 	Server(int port, const std::string& password);
 	~Server();
 	
-	//ServerSideCommands
+	/******************ServerSideCommands*************/
 	void		run();
 	void		acceptNewClient();
 	void		handleClientMessage(int clientFd);
-	void		join(int clientFd, const std::string& channelNAme, const std::string& password);
 	void		sendMessage(int clientFd, const std::string& message);
 	
 };

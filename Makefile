@@ -13,6 +13,10 @@ CFLAGS = -Wall -Wextra -Werror -std=c++98 -fsanitize=address -g3
 
 SRCS =  main.cpp \
 		Server.cpp \
+		Server_Transfer.cpp \
+		Server_Commands_Part1.cpp \
+		Server_Commands_Part2.cpp \
+		Server_Commands_Part3.cpp \
 		Client.cpp \
 		Bot.cpp \
 		FileTransfer.cpp
