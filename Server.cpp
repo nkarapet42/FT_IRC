@@ -45,13 +45,14 @@ void	Server::run() {
 			std::cerr << RED << "Error: poll() failed\n" << RED;
 			break;
 		}
-
+		
 		for (size_t i = 0; i < _pollFds.size(); i++) {
 			if (_pollFds[i].revents & POLLIN) {
-				if (_pollFds[i].fd == _serverSocket)
+				if (_pollFds[i].fd == _serverSocket) {
 					acceptNewClient();
+				}
 				else
-					handleClientMessage(_pollFds[i].fd);
+				handleClientMessage(_pollFds[i].fd);
 			}
 		}
 	}
@@ -985,7 +986,7 @@ void	Server::join(int clientFd, const std::string& channelName, const std::strin
 	}
 	for (size_t i = 0; i < channelsIRC.size(); i++) {
 		if (channelsIRC[i].channelName == channelName) {
-			if (channelsIRC[i].members.size() >= static_cast<std::vector<std::string>::size_type>(channelsIRC[i].limit)) {
+			if (channelsIRC[i].haveLimit && channelsIRC[i].members.size() >= static_cast<std::vector<std::string>::size_type>(channelsIRC[i].limit)) {
 				sendMessage(clientFd, std::string(RED) + "Error: Channel is full.\n" + std::string(RESET));
 				return ;
 			}
