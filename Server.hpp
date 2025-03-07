@@ -63,6 +63,7 @@ private:
 	/******************ServerSideCommands*************/
 	void	authenticateClient(int clientFd, const std::string& password);
 	void	broadcastMessage(const std::string& channelName, int senderFd, const std::string& message);
+	bool	isChannelName(const std::string& channelName);
 	void	handleClientCommands(int clientFd, const std::string& command);
 	void	Message(int clientFd, const std::string& line);
 

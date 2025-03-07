@@ -212,11 +212,23 @@ void Server::botCommandsCall(int clientFd, const std::string& line) {
 	}
 }
 
+bool	Server::isChannelName(const std::string& channelName) {
+	if (channelName.empty())
+		return false;
+	if (channelName[0] != '#')
+		return false;
+	return true;
+}
+
 void Server::handleClientCommands(int clientFd, const std::string& line) {
 	std::stringstream ss(line);
 	std::string cmd, channelName, password, nick;
 	ss >> cmd >> channelName;
 
+	if (!isChannelName(channelName)) {
+		sendErrorMessage(clientFd, "Error: Invalid channel name.", 401);
+		return;
+	}
 	if (cmd != "USER" && _clients[clientFd].username.empty()) {
 		sendMessage(clientFd, std::string(RED) + "Error: Please set a username before starting conversation.\n" + std::string(RESET));
 		sendMessage(clientFd, std::string(YELLOW) + "Info: USER <username>.\n" + std::string(RESET));
