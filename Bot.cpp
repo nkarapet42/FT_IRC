@@ -44,7 +44,7 @@ void Bot::botHelp(int clientFd, Server& server, const std::string& line) {
 	helpMessage += "!TIME - Get the current server time\n";
 	helpMessage += "!WEATHER - Get a random weather forecast\n";
 
-	server.sendMessage(clientFd, std::string(YELLOW) + helpMessage + std::string(RESET));
+	server.sendMessage(clientFd, std::string(YELLOW) + helpMessage + std::string(RESET), NULL);
 }
 
 void Bot::sendMotd(int clientFd, Server& server, const std::string& line) {
@@ -84,7 +84,7 @@ void Bot::sendMotd(int clientFd, Server& server, const std::string& line) {
     motd += "Here's a random quote for you:\n";
     motd += "\"" + quotes[randomIndex] + "\"";
 
-    server.sendMessage(clientFd, std::string(PURPLE) + motd + "\n" + std::string(RESET));
+    server.sendMessage(clientFd, std::string(PURPLE) + motd + "\n" + std::string(RESET), NULL);
 }
 
 void Bot::sendTime(int clientFd, Server& server, const std::string& line) {
@@ -101,7 +101,7 @@ void Bot::sendTime(int clientFd, Server& server, const std::string& line) {
 
     time_t now = time(0);
     std::string timeStr = ctime(&now);
-    server.sendMessage(clientFd, std::string(GREEN) + "Current time: " + timeStr + std::string(RESET));
+    server.sendMessage(clientFd, std::string(GREEN) + "Current time: " + timeStr + std::string(RESET), NULL);
 }
 
 static std::string getRandomWeather() {
@@ -190,5 +190,5 @@ void Bot::sendWeather(int clientFd, Server& server, const std::string& line) {
     for (std::vector<std::string>::iterator it = weatherArt.begin(); it != weatherArt.end(); ++it) {
 		weatherInfo += *it + "\n";
 	}
-    server.sendMessage(clientFd, weatherInfo);
+    server.sendMessage(clientFd, weatherInfo,   NULL);
 }

@@ -62,7 +62,7 @@ private:
 
 	/******************ServerSideCommands*************/
 	void	authenticateClient(int clientFd, const std::string& password);
-	void	broadcastMessage(const std::string& channelName, int senderFd, const std::string& message);
+	void	broadcastMessage(const std::string& channelName, int senderFd, const std::string& message, const std::string& cmd);
 	bool	isChannelName(const std::string& channelName);
 	void	handleClientCommands(int clientFd, const std::string& command);
 	void	Message(int clientFd, const std::string& line);
@@ -94,7 +94,7 @@ private:
 	void		run();
 	void		acceptNewClient();
 	void		handleClientMessage(int clientFd);
-	void		sendMessage(int clientFd, const std::string& message);
+	void		sendMessage(int clientFd, const std::string& message, const std::string& cmd);
 	void		sendErrorMessage(int clientFd, const std::string& message, int errorNumber);
 	
 };

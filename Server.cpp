@@ -62,11 +62,11 @@ void	Server::authenticateClient(int clientFd, const std::string& password) {
 	if (password == _password) {
 		std::cout<< clientFd <<std::endl;
 		_clients[clientFd].isAuthenticated = true;
-		sendMessage(clientFd, std::string(GREEN) + "Authentication successful!\n" + std::string(RESET));
-		sendMessage(clientFd, "You can now send commands.\n");
+		sendMessage(clientFd, std::string(GREEN) + "Authentication successful!\n" + std::string(RESET), NULL);
+		sendMessage(clientFd, "You can now send commands.\n", NULL);
 	} else {
 		std::cout<< clientFd <<std::endl;
-		sendMessage(clientFd, std::string(RED) + "Incorrect password, try again.\n" + std::string(RESET));
+		sendMessage(clientFd, std::string(RED) + "Incorrect password, try again.\n" + std::string(RESET), NULL);
 	}
 }
 
@@ -85,7 +85,7 @@ void	Server::acceptNewClient() {
 	_clients[clientFd] = Client(clientFd);
 	
 	
-	sendMessage(clientFd, std::string(PURPLE) + "Please authenticate by sending the password: PASS <password>\n" + std::string(RESET));
+	sendMessage(clientFd, std::string(PURPLE) + "Please authenticate by sending the password: PASS <password>\n" + std::string(RESET), NULL);
 	std::cout << "New client connected: FD " << clientFd << "\n";
 }
 
@@ -111,14 +111,15 @@ void	Server::sendErrorMessage(int clientFd, const std::string& message, int erro
 }
 
 
-void	Server::sendMessage(int clientFd, const std::string& message) {
-	send(clientFd, message.c_str(), message.length(), 0);
+void	Server::sendMessage(int clientFd, const std::string& message, const std::string& cmd) {
+	std::string newMessage = ":" + _clients[clientFd].getNickname() + " " + cmd + " #" + _clients[clientFd].curchannel + " :" + message;
+	send(clientFd, newMessage.c_str(), newMessage.length(), 0);
 }
 
-void Server::broadcastMessage(const std::string& channelName, int senderFd, const std::string& message) {
+void Server::broadcastMessage(const std::string& channelName, int senderFd, const std::string& message, const std::string& cmd) {
 	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
 		if (it->second.curchannel == channelName && it->first != senderFd) {
-			sendMessage(it->first, std::string(CYAN) + "[ " + _clients[senderFd].nickname + " ]: " + message + "\n" + std::string(RESET));
+			sendMessage(it->first, std::string(CYAN) + "[ " + _clients[senderFd].nickname + " ]: " + message + "\n" + std::string(RESET), cmd);
 		}
 	}
 }
@@ -168,11 +169,11 @@ void	Server::handleClientMessage(int clientFd) {
 		std::getline(ss, restOfLine);
 	std::cout << "Received from FD----> " << clientFd << ": " << message;
 		if (pass_word.empty() || !restOfLine.empty()) {
-			sendMessage(clientFd, std::string(RED) + "Error: PASS <password>.\n" + std::string(RESET));
+			sendErrorMessage(clientFd, "Error: PASS <password>.\n", 401);\
 		} else if (cmd == "PASS") {
 			authenticateClient(clientFd, pass_word);
 		} else {
-			sendMessage(clientFd, std::string(RED) + "Error: PASS <password>.\n" + std::string(RESET));
+			sendErrorMessage(clientFd, "Error: PASS <password>.\n", 401);
 		}
 	}
 }
@@ -184,9 +185,9 @@ void	Server::Message(int clientFd, const std::string& line) {
 	if (!message.empty() && message[0] == ' ')
 		message = message.substr(1);
 	if (!message.empty())
-		broadcastMessage(_clients[clientFd].curchannel, clientFd, message);
+		broadcastMessage(_clients[clientFd].curchannel, clientFd, message, "PRIVMSG");
 	else
-		sendMessage(clientFd, std::string(RED) + "Error: No message provided.\n" + std::string(RESET));
+		sendErrorMessage(clientFd, "Error: Message cannot be empty.", 401);
 }
 
 void Server::botCommandsCall(int clientFd, const std::string& line) {
@@ -204,11 +205,11 @@ void Server::botCommandsCall(int clientFd, const std::string& line) {
 		} else if (cmd == "!WEATHER") {
 			_bot.sendWeather(clientFd, *this, line);
 		} else {
-			sendMessage(clientFd, std::string(RED) + "Unknown Bot command: " + std::string(RESET) + cmd + "\n");
+			sendErrorMessage(clientFd, std::string(RED) + "Unknown Bot command: " + std::string(RESET) + cmd + "\n", 401);
 		}
 	} else {
-		sendMessage(clientFd, std::string(RED) + "You are not in the channel,for using Bot!!!!\n" + std::string(RESET));
-		sendMessage(clientFd, std::string(PURPLE) + "Suggest : Use 'JOIN <channel> [password]'\n" + std::string(RESET));
+		sendErrorMessage(clientFd, "Error: You are not in the channel,for using Bot!!!!", 401);
+		sendMessage(clientFd, std::string(PURPLE) + "Suggest : Use 'JOIN <channel> [password]'\n" + std::string(RESET), NULL);
 	}
 }
 
@@ -230,8 +231,8 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 		return;
 	}
 	if (cmd != "USER" && _clients[clientFd].username.empty()) {
-		sendMessage(clientFd, std::string(RED) + "Error: Please set a username before starting conversation.\n" + std::string(RESET));
-		sendMessage(clientFd, std::string(YELLOW) + "Info: USER <username>.\n" + std::string(RESET));
+		sendErrorMessage(clientFd, "Error: Please set a username before starting conversation.", 401);
+		sendMessage(clientFd, std::string(YELLOW) + "Info: USER <username>.\n" + std::string(RESET), NULL);
 		return ;
 	} 
 	if (cmd == "USER") {
@@ -270,15 +271,15 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 		} else if (channelName == "GET") {
 			dccGet(clientFd, line);
 		} else {
-			sendMessage(clientFd, std::string(RED) + "Usage: DCC SEND or DCC GET\n" + std::string(RESET));
+			sendMessage(clientFd, std::string(RED) + "Usage: DCC SEND or DCC GET\n" + std::string(RESET), "DCC");
 		}
 	} else if (cmd[0] == '!') {
 		botCommandsCall(clientFd, line);
 	} else if (!_clients[clientFd].curchannel.empty()) {
 		Message(clientFd, line);
 	} else {
-		sendMessage(clientFd, std::string(RED) + "Unknown command: " + std::string(RESET) + cmd + "\n");
-		sendMessage(clientFd, std::string(PURPLE) + "Use !HELP to know more about commands" + std::string(RESET) + "\n");
+		sendErrorMessage(clientFd, "Error: Unkown command.", 401);
+		sendMessage(clientFd, std::string(PURPLE) + "Use !HELP to know more about commands" + std::string(RESET) + "\n", NULL);
 	}
 }
 

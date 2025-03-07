@@ -26,8 +26,8 @@ void Server::startFileTransfer(int receiverFd, const std::string& filename, size
     }
 
     file.close();
-    sendMessage(receiverFd, std::string(YELLOW) + "Capacity of File\n" + std::string(RESET));
-    sendMessage(receiverFd, std::string(GREEN) + "File transfer completed.\n" + std::string(RESET));
+    sendMessage(receiverFd, std::string(YELLOW) + "Capacity of File\n" + std::string(RESET), "DCC");
+    sendMessage(receiverFd, std::string(GREEN) + "File transfer completed.\n" + std::string(RESET), "DCC");
 }
 
 
@@ -37,11 +37,11 @@ void Server::startFileTransfer(int receiverFd, const std::string& filename, size
     ss >> cmd >> type >> receiverNick >> filename;
 	
 	if (type.empty() || type != "SEND") {
-		sendMessage(senderFd, std::string(RED) + "Usage: DCC SEND <nickname> <filename>\n" + std::string(RESET));
+        sendErrorMessage(senderFd, "Error: Wrong Syntax.", 401);
 		return;
 	}
     if (receiverNick.empty() || filename.empty()) {
-        sendMessage(senderFd, std::string(RED) + "Usage: DCC SEND <nickname> <filename>\n" + std::string(RESET));
+        sendErrorMessage(senderFd, "Error: Wrong Syntax.", 401);
         return;
     }
 	if (_clients[senderFd].nickname == receiverNick) {
@@ -85,7 +85,7 @@ void Server::startFileTransfer(int receiverFd, const std::string& filename, size
 
     std::string dccMessage = "DCC SEND " + filename + " " + _clients[senderFd].nickname + " " + fileSizeStr + "\n"
 							+ "USE: DCC GET <filename> for accepting";
-    sendMessage(receiverFd, std::string(GREEN) + dccMessage + "\n" + std::string(RESET));
+    sendMessage(receiverFd, std::string(GREEN) + dccMessage + "\n" + std::string(RESET), "DCC");
 
     startFileTransfer(receiverFd, filename, fileSize);
 }
@@ -137,9 +137,9 @@ void Server::connectToSender(int receiverFd, const FileTransfer& transfer) {
 
     std::stringstream info;
     info << "DCC GET " << filename << " " << fileSize << " " << dccFilePath;
-    sendMessage(receiverFd, std::string(YELLOW) + info.str() + "\n" + std::string(RESET));
+    sendMessage(receiverFd, std::string(YELLOW) + info.str() + "\n" + std::string(RESET), "DCC");
 
-    sendMessage(receiverFd, std::string(GREEN) + "File transfer completed." + std::string(RESET));
+    sendMessage(receiverFd, std::string(GREEN) + "File transfer completed." + std::string(RESET), "DCC");
 }
 
 
@@ -149,11 +149,11 @@ void Server::dccGet(int receiverFd, const std::string& line) {
     ss >> cmd >> type >> filename;
 
 	if (type.empty() || type != "GET") {
-		sendMessage(receiverFd, std::string(RED) + "Usage: DCC GET <filename>\n" + std::string(RESET));
+		sendMessage(receiverFd, std::string(RED) + "Usage: DCC GET <filename>\n" + std::string(RESET), "DCC");
 		return;
 	}
     if (filename.empty()) {
-        sendMessage(receiverFd, std::string(RED) + "Usage: DCC GET <filename>\n" + std::string(RESET));
+        sendMessage(receiverFd, std::string(RED) + "Usage: DCC GET <filename>\n" + std::string(RESET), "DCC");
         return;
     }
 
@@ -170,8 +170,8 @@ void Server::dccGet(int receiverFd, const std::string& line) {
         return;
     }
 
-    sendMessage(transfer.senderFd, std::string(YELLOW) + "User " + _clients[receiverFd].nickname + " has accepted your file: " + filename + "\n" + std::string(RESET));
-    sendMessage(receiverFd, std::string(YELLOW) + "You accepted the file: " + filename + " from " + _clients[transfer.senderFd].nickname + ". Waiting for transfer...\n" + std::string(RESET));
+    sendMessage(transfer.senderFd, std::string(YELLOW) + "User " + _clients[receiverFd].nickname + " has accepted your file: " + filename + "\n" + std::string(RESET), "DCC");
+    sendMessage(receiverFd, std::string(YELLOW) + "You accepted the file: " + filename + " from " + _clients[transfer.senderFd].nickname + ". Waiting for transfer...\n" + std::string(RESET), "DCC");
 
     connectToSender(receiverFd, transfer);
     activeTransfers.erase(it);

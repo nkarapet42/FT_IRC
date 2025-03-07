@@ -37,8 +37,8 @@ void	Server::invite(int clientFd, const std::string& channel, const std::string&
 				return;
 			}
 			it->invited.push_back(nick);
-			sendMessage(clientFd, std::string(GREEN) + "User " + nick + " has been invited to the channel " + channel + ".\n" + std::string(RESET));
-			sendMessage(inviteeFd, std::string(CYAN) + "You have been invited to join channel " + channel + " by " + _clients[clientFd].nickname + ".\n" + std::string(RESET));
+			sendMessage(clientFd, std::string(GREEN) + "User " + nick + " has been invited to the channel " + channel + ".\n" + std::string(RESET), "INVITE");
+			sendMessage(inviteeFd, std::string(CYAN) + "You have been invited to join channel " + channel + " by " + _clients[clientFd].nickname + ".\n" + std::string(RESET), "INVITE");
 			return;
 		}
 	}
@@ -77,12 +77,12 @@ void	Server::join(int clientFd, const std::string& channelName, const std::strin
 				sendErrorMessage(clientFd, "Error: Channel does not have a password.", 464);
 				return ;
 			}
-			sendMessage(clientFd,  std::string(CYAN) + _clients[clientFd].getNickname() + " joined channel: " + channelName + "\n" +  std::string(RESET));
+			sendMessage(clientFd,  std::string(CYAN) + _clients[clientFd].getNickname() + " joined channel: " + channelName + "\n" +  std::string(RESET), "JOIN");
 			_clients[clientFd].joinChannel(channelName, password);
 			return ;
 		}
 	}
-	sendMessage(clientFd,  std::string(CYAN) + _clients[clientFd].getNickname() + " created and joined channel: " + channelName + "\n" + std::string(RESET));
+	sendMessage(clientFd,  std::string(CYAN) + _clients[clientFd].getNickname() + " created and joined channel: " + channelName + "\n" + std::string(RESET), "JOIN");
 	_clients[clientFd].joinChannel(channelName, password);
 }
 
@@ -96,11 +96,11 @@ void	Server::modeCommand(int clientFd, const std::string& channel, const std::st
 			if (mode == "i") {
 				it->isInviteOnly = !it->isInviteOnly;
 				it->havePass = !it->havePass;
-				sendMessage(clientFd, std::string(GREEN) + "Invite-only mode " + (it->havePass ? "enabled" : "disabled") + " for channel " + channel + ".\n" + std::string(RESET));
+				sendMessage(clientFd, std::string(GREEN) + "Invite-only mode " + (it->havePass ? "enabled" : "disabled") + " for channel " + channel + ".\n" + std::string(RESET), "MODE");
 			}
 			else if (mode == "t") {
 				it->isTopic = !it->isTopic;
-				sendMessage(clientFd, std::string(GREEN) + "Topic restriction " + (it->isTopic ? "enabled" : "disabled") + " for channel " + channel + ".\n" + std::string(RESET));
+				sendMessage(clientFd, std::string(GREEN) + "Topic restriction " + (it->isTopic ? "enabled" : "disabled") + " for channel " + channel + ".\n" + std::string(RESET), "MODE");
 			}
 			else if (mode == "k") {
 				if (param.empty()) {
@@ -109,7 +109,7 @@ void	Server::modeCommand(int clientFd, const std::string& channel, const std::st
 				}
 				it->channelPass = param;
 				it->havePass = true;
-				sendMessage(clientFd, std::string(GREEN) + "Password set for channel " + channel + ".\n" + std::string(RESET));
+				sendMessage(clientFd, std::string(GREEN) + "Password set for channel " + channel + ".\n" + std::string(RESET), "MODE");
 			}
 			else if (mode == "o") {
 				bool userFound = false;
@@ -117,7 +117,7 @@ void	Server::modeCommand(int clientFd, const std::string& channel, const std::st
 					if (clientIt->second.nickname == param) {
 						clientIt->second.isOperator = !clientIt->second.isOperator;
 						userFound = true;
-						sendMessage(clientFd, std::string(GREEN) + "Operator status " + (clientIt->second.isOperator ? "granted" : "revoked") + " for user " + param + " in channel " + channel + ".\n" + std::string(RESET));
+						sendMessage(clientFd, std::string(GREEN) + "Operator status " + (clientIt->second.isOperator ? "granted" : "revoked") + " for user " + param + " in channel " + channel + ".\n" + std::string(RESET), "MODE");
 						break;
 					}
 				}
@@ -136,7 +136,7 @@ void	Server::modeCommand(int clientFd, const std::string& channel, const std::st
 					sendErrorMessage(clientFd, "Error: Invalid limit.", 461);
 					return;
 				}
-				sendMessage(clientFd, std::string(GREEN) + "User limit set to " + param + " for channel " + channel + ".\n" + std::string(RESET));
+				sendMessage(clientFd, std::string(GREEN) + "User limit set to " + param + " for channel " + channel + ".\n" + std::string(RESET), "MODE");
 			}
 			else {
 				sendErrorMessage(clientFd, "Error: Invalid mode.", 461);

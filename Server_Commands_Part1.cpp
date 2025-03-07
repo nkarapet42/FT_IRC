@@ -20,7 +20,7 @@ void Server::quitClient(int clientFd, const std::string& line) {
 	quitMessage += ".\n";
 
 	for (size_t i = 0; i < it->second.channels.size(); ++i) {
-		broadcastMessage(it->second.channels[i].channelName, clientFd, std::string(CYAN) + quitMessage + std::string(RESET));
+		broadcastMessage(it->second.channels[i].channelName, clientFd, std::string(CYAN) + quitMessage + std::string(RESET), "QUIT");
 	}
 	for (size_t i = 0; i < it->second.channels.size(); ++i) {
 		it->second.leaveChannel(it->second.channels[i].channelName);
@@ -41,7 +41,7 @@ void	Server::setUsername(int clientFd, const std::string& user) {
 		return;
 	}
 	_clients[clientFd].setUsername(user);
-	sendMessage(clientFd, std::string(CYAN) + "Your username has been seted.\n" + std::string(RESET));
+	sendMessage(clientFd, std::string(CYAN) + "Your username has been seted.\n" + std::string(RESET), "USER");
 }
 
 void Server::changeNickname(int clientFd, const std::string& newNick) {
@@ -60,11 +60,11 @@ void Server::changeNickname(int clientFd, const std::string& newNick) {
 	std::string oldNick = _clients[clientFd].nickname;
 	_clients[clientFd].setNickname(newNick);
 	
-	sendMessage(clientFd,  std::string(CYAN) + "Your nickname has been changed to " + newNick + "\n" + std::string(RESET));
+	sendMessage(clientFd,  std::string(CYAN) + "Your nickname has been changed to " + newNick + "\n" + std::string(RESET), "NICK");
 	
 	for (size_t i = 0; i < _clients[clientFd].channels.size(); i++) {
 		std::string channel = _clients[clientFd].channels[i].channelName;
-		broadcastMessage(channel , clientFd, "User " + oldNick + " is now known as " + newNick);
+		broadcastMessage(channel , clientFd, "User " + oldNick + " is now known as " + newNick, "NICK");
 	}
 }
 
@@ -82,7 +82,7 @@ void	Server::privateNoticeMessage(int clientFd, const std::string& line) {
 	if (!message.empty()) {
 		for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
 			if (it->second.nickname == client) {
-				sendMessage(it->second.fd, std::string(CYAN) + cmd + " : [ " + _clients[clientFd].nickname +" -> " + client + " ]: " + message + "\n" + std::string(RESET));
+			sendMessage(it->second.fd, std::string(CYAN) + cmd + " : [ " + _clients[clientFd].nickname +" -> " + client + " ]: " + message + "\n" + std::string(RESET), "PRIVMSG");
 				return;
 			}
 		}
@@ -156,7 +156,7 @@ void Server::kick(int clientFd, const std::string& channel, const std::string& n
                 }
             }
 
-            sendMessage(clientFd, std::string(GREEN) + "User " + nick + " has been kicked from the channel " + channel + ".\n" + std::string(RESET));
+            sendMessage(clientFd, std::string(GREEN) + "User " + nick + " has been kicked from the channel " + channel + ".\n" + std::string(RESET), "KICK");
             return;
         }
     }
