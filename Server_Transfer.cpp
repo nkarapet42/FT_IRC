@@ -3,7 +3,7 @@
 void Server::startFileTransfer(int receiverFd, const std::string& filename, size_t fileSize) {
     std::ifstream file(filename.c_str(), std::ios::binary);
     if (!file.is_open()) {
-        sendMessage(receiverFd, std::string(RED) + "Error: Unable to open file for transfer.\n" + std::string(RESET));
+        sendErrorMessage(receiverFd, "Error: Unable to open file for transfer.", 401);
         return;
     }
 
@@ -18,7 +18,7 @@ void Server::startFileTransfer(int receiverFd, const std::string& filename, size
         if (file.gcount() > 0) {
             ssize_t bytesWritten = send(receiverFd, buffer, file.gcount(), 0);
             if (bytesWritten == -1) {
-                sendMessage(receiverFd, std::string(RED) + "Error: File transfer failed.\n" + std::string(RESET));
+                sendErrorMessage(receiverFd, "Error: Unable to send file.", 401);
                 break;
             }
             bytesSent += bytesWritten;
@@ -45,7 +45,7 @@ void Server::startFileTransfer(int receiverFd, const std::string& filename, size
         return;
     }
 	if (_clients[senderFd].nickname == receiverNick) {
-		sendMessage(senderFd, std::string(RED) + "Error: Cant send file to yourself.\n" + std::string(RESET));
+        sendErrorMessage(senderFd, "Error: You cannot send a file to yourself.", 401);
 		return;
 	}
 
@@ -58,20 +58,20 @@ void Server::startFileTransfer(int receiverFd, const std::string& filename, size
     }
 
     if (receiverFd == -1) {
-        sendMessage(senderFd, std::string(RED) + "Error: User " + receiverNick + " not found.\n" + std::string(RESET));
+        sendErrorMessage(senderFd, "Error: User not found.", 401);
         return;
     }
 
 	if (activeTransfers.find(filename) != activeTransfers.end()
 		&& activeTransfers.find(filename)->second.senderFd == senderFd
 		&& activeTransfers.find(filename)->second.receiverFd == receiverFd) {
-        sendMessage(senderFd, std::string(RED) + "Error: File transfer for '" + filename + "' is already in progress.\n" + std::string(RESET));
+        sendErrorMessage(senderFd, "Error: File transfer for '" + filename + "' is already in progress.\n", 401);
         return;
     }
 
     std::ifstream file(filename.c_str(), std::ios::binary | std::ios::ate);
     if (!file) {
-        sendMessage(senderFd, std::string(RED) + "Error: File not found.\n" + std::string(RESET));
+        sendErrorMessage(senderFd, std::string(RED) + "Error: File not found.\n" + std::string(RESET), 401);
         return;
     }
     int fileSize = file.tellg();
@@ -110,7 +110,7 @@ void Server::connectToSender(int receiverFd, const FileTransfer& transfer) {
     size_t fileSize = transfer.fileSize;
 
     if (_clients.find(senderFd) == _clients.end()) {
-        sendMessage(receiverFd, std::string(RED) + "Error: Sender is no longer available.\n" + std::string(RESET));
+        sendErrorMessage(receiverFd, "Error: Sender is no longer connected.", 401);
         return;
     }
 
@@ -118,13 +118,13 @@ void Server::connectToSender(int receiverFd, const FileTransfer& transfer) {
 
     std::ofstream dccFile(dccFilePath.c_str(), std::ios::binary);
     if (!dccFile.is_open()) {
-        sendMessage(receiverFd, std::string(RED) + "Error: Unable to create file for transfer.\n" + std::string(RESET));
+        sendErrorMessage(receiverFd, std::string(RED) + "Error: Unable to open file for transfer.\n" + std::string(RESET), 999);
         return;
     }
 
     std::ifstream file(filename.c_str(), std::ios::binary);
     if (!file.is_open()) {
-        sendMessage(receiverFd, std::string(RED) + "Error: Unable to open file for transfer.\n" + std::string(RESET));
+        sendErrorMessage(receiverFd, std::string(RED) + "Error: Unable to open file for transfer.\n" + std::string(RESET), 999);
         return;
     }
 
@@ -159,14 +159,14 @@ void Server::dccGet(int receiverFd, const std::string& line) {
 
 	std::map<std::string, FileTransfer>::iterator it = activeTransfers.find(filename);
     if (it == activeTransfers.end()) {
-        sendMessage(receiverFd, std::string(RED) + "Error: No active DCC SEND for this file.\n" + std::string(RESET));
+        sendErrorMessage(receiverFd, "Error: No file transfer found for '" + filename + "'.\n", 401);
         return;
     }
 
 	FileTransfer& transfer = it->second;
 
     if (transfer.receiverFd != receiverFd) {
-        sendMessage(receiverFd, std::string(RED) + "Error: You are not the intended recipient of this file.\n" + std::string(RESET));
+        sendErrorMessage(receiverFd, "Error: No file transfer found for '" + filename + "'.\n", 401);
         return;
     }
 

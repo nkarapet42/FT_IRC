@@ -12,7 +12,7 @@ void Bot::botHelp(int clientFd, Server& server, const std::string& line) {
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
 	if (!restOfLine.empty()) {
-		server.sendMessage(clientFd, std::string(RED) + "Error: The !HELP command must be used without additional arguments.\n" + std::string(RESET));
+        server.sendErrorMessage(clientFd, "Error: Wrong Syntax.", 401);
 		return;
 	}
 
@@ -24,7 +24,6 @@ void Bot::botHelp(int clientFd, Server& server, const std::string& line) {
 	helpMessage += "JOIN <channel> [password] - Join a channel\n";
 	helpMessage += "KICK <channel> <nickname> - Kick a user from a channel\n";
 	helpMessage += "NICK <nickname> - Set your nickname\n";
-	helpMessage += "NOTICE <nickname> <message> - Send notice message\n";
 	helpMessage += "\nMODE <channel> <mode> [parameter]\n";
     helpMessage += "* Available modes:\n";
     helpMessage += "  - i : Toggle invite-only mode (only invited users can join).\n";
@@ -56,7 +55,7 @@ void Bot::sendMotd(int clientFd, Server& server, const std::string& line) {
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
 	if (!restOfLine.empty()) {
-		server.sendMessage(clientFd, std::string(RED) + "Error: The !MOTD command must be used without additional arguments.\n" + std::string(RESET));
+        server.sendErrorMessage(clientFd, "Error: The !MOTD command must be used without additional arguments.", 401);
 		return;
 	}
     time_t now = time(0);
@@ -96,7 +95,7 @@ void Bot::sendTime(int clientFd, Server& server, const std::string& line) {
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
 	if (!restOfLine.empty()) {
-		server.sendMessage(clientFd, std::string(RED) + "Error: The !TIME command must be used without additional arguments.\n" + std::string(RESET));
+        server.sendErrorMessage(clientFd, "Error: The !TIME command must be used without additional arguments.", 401);
 		return;
 	}
 
@@ -173,13 +172,13 @@ void Bot::sendWeather(int clientFd, Server& server, const std::string& line) {
 	ss >> cmd >> location;
 
 	if (location.empty()) {
-		server.sendMessage(clientFd, std::string(RED) + "Error: The !WEATHER command must be used with location.\n" + std::string(RESET));
+        server.sendErrorMessage(clientFd, "Error: The !WEATHER command must be used with location.\n", 998);
 		return;
 	}
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
 	if (!restOfLine.empty()) {
-		server.sendMessage(clientFd, std::string(RED) + "Error: The !WEATHER command must be used only with one argument.\n" + std::string(RESET));
+        server.sendErrorMessage(clientFd, "Error: The !WEATHER command must be used only with one argument.\n", 998);
 		return;
 	}
 

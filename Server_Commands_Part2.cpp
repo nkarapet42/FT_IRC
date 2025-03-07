@@ -8,7 +8,7 @@ void Server::whoCommand(int clientFd, const std::string& line) {
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
 	if (!restOfLine.empty()) {
-		sendMessage(clientFd, std::string(RED) + "Error: Wrong Syntax.\n" + std::string(RESET));
+        sendErrorMessage(clientFd, "Error: Wrong Syntax.", 401);
 		sendMessage(clientFd, std::string(RED) + "Usage: WHO [channel].\n" + std::string(RESET));
 		return;
 	}
@@ -38,7 +38,7 @@ void Server::whoCommand(int clientFd, const std::string& line) {
             }
         }
         if (!channel) {
-            sendMessage(clientFd, std::string(RED) + "ERROR: Channel not found.\n" + std::string(RESET));
+            sendErrorMessage(clientFd, "Error: Channel not found.", 401);
             return;
         }
         std::string response = "WHO " + channelName + " :";
@@ -62,7 +62,7 @@ void Server::partChannel(int clientFd, const std::string& line) {
 	ss >> cmd >> channelName;
 
 	if (channelName.empty()) {
-		sendMessage(clientFd, std::string(RED) + "ERROR: Wrong Syntax .\n" + std::string(RESET));
+        sendErrorMessage(clientFd, "Error: Wrong Syntax.", 401);
 		sendMessage(clientFd, std::string(RED) + "Usage: PART <channel> [message].\n" + std::string(RESET));
 		return;
 	}
@@ -78,7 +78,7 @@ void Server::partChannel(int clientFd, const std::string& line) {
 		}
 	}
 	if (!channel) {
-		sendMessage(clientFd, std::string(RED) + "ERROR: Channel not found.\n" + std::string(RESET));
+        sendErrorMessage(clientFd, "Error: Channel not found.", 401);
 		return;
 	}
 	if (_clients[clientFd].leaveChannel(channelName)){
@@ -95,7 +95,7 @@ void Server::topicCommand(int clientFd, const std::string& line) {
 	ss >> cmd >> channelName;
 
 	if (channelName.empty()) {
-		sendMessage(clientFd, std::string(RED) + "ERROR: No channel specified.\n" + std::string(RESET));
+        sendErrorMessage(clientFd, "Error: Wrong Syntax.", 401);
 		sendMessage(clientFd, std::string(RED) + "Usage: TOPIC <channel> [topic].\n" + std::string(RESET));
 		return;
 	}
@@ -111,7 +111,7 @@ void Server::topicCommand(int clientFd, const std::string& line) {
     }
 
     if (!channel) {
-        sendMessage(clientFd, std::string(RED) + "ERROR: Channel not found.\n" + std::string(RESET));
+        sendErrorMessage(clientFd, "Error: Channel not found.", 401);
         return;
     }
 
@@ -134,7 +134,7 @@ void Server::topicCommand(int clientFd, const std::string& line) {
             sendMessage(clientFd, std::string(CYAN) + response + std::string(RESET));
             broadcastMessage(channelName, clientFd, std::string(CYAN) + response + std::string(RESET));
         } else {
-            sendMessage(clientFd, std::string(RED) + "ERROR: You are not an operator of this channel.\n" + std::string(RESET));
+            sendErrorMessage(clientFd, "Error: You are not an operator of this channel.", 482);
         }
     }
 }

@@ -77,14 +77,14 @@ private:
 	void	whoCommand(int clientFd, const std::string& line);
 	void	partChannel(int clientFd, const std::string& line);
 	void	topicCommand(int clientFd, const std::string& line);
-
+	
 	/****************Server_Commands_Part3*****************/
 	void	invite(int clientFd, const std::string& channel, const std::string& nick);
 	void	join(int clientFd, const std::string& channelNAme, const std::string& password);
 	void	modeCommand(int clientFd, const std::string& channel, const std::string& mode, const std::string& param);
-
-public:
-
+	
+	public:
+	
 	/****************Constructors*****************/
 	Server(int port, const std::string& password);
 	~Server();
@@ -94,5 +94,6 @@ public:
 	void		acceptNewClient();
 	void		handleClientMessage(int clientFd);
 	void		sendMessage(int clientFd, const std::string& message);
+	void		sendErrorMessage(int clientFd, const std::string& message, int errorNumber);
 	
 };

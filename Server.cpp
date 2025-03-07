@@ -58,11 +58,14 @@ void	Server::run() {
 }
 
 void	Server::authenticateClient(int clientFd, const std::string& password) {
+	std::cout<< clientFd <<std::endl;
 	if (password == _password) {
+		std::cout<< clientFd <<std::endl;
 		_clients[clientFd].isAuthenticated = true;
 		sendMessage(clientFd, std::string(GREEN) + "Authentication successful!\n" + std::string(RESET));
 		sendMessage(clientFd, "You can now send commands.\n");
 	} else {
+		std::cout<< clientFd <<std::endl;
 		sendMessage(clientFd, std::string(RED) + "Incorrect password, try again.\n" + std::string(RESET));
 	}
 }
@@ -86,6 +89,28 @@ void	Server::acceptNewClient() {
 	std::cout << "New client connected: FD " << clientFd << "\n";
 }
 
+std::string intToString(int value) {
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
+}
+
+void	Server::sendErrorMessage(int clientFd, const std::string& message, int errorNumber) {
+    if (_clients.find(clientFd) == _clients.end()) {
+        std::cerr << "Error: Client FD " << clientFd << " not found.\n";
+        return;
+    }
+
+    std::string errorMessage = std::string(RED) + ":FT_IRC " 
+        + intToString(errorNumber) + " " 
+        + _clients[clientFd].getNickname() + " " 
+        + (!_clients[clientFd].curchannel.empty() ? _clients[clientFd].curchannel + " " : "") 
+        + ":" + message + "\r\n" + std::string(RESET);
+
+    send(clientFd, errorMessage.c_str(), errorMessage.length(), 0);
+}
+
+
 void	Server::sendMessage(int clientFd, const std::string& message) {
 	send(clientFd, message.c_str(), message.length(), 0);
 }
@@ -99,9 +124,9 @@ void Server::broadcastMessage(const std::string& channelName, int senderFd, cons
 }
 
 void	Server::handleClientMessage(int clientFd) {
-	char buffer[512];
+	char buffer[1024];
 	std::memset(buffer, 0, sizeof(buffer));
-	int bytesRead = recv(clientFd, buffer, sizeof(buffer) - 1, 0);
+	int bytesRead = read(clientFd, buffer, sizeof(buffer) - 1);
 
 	if (bytesRead <= 0) {
 		if (bytesRead == 0) {
@@ -132,6 +157,7 @@ void	Server::handleClientMessage(int clientFd) {
 	}
 	std::cout << "Received from FD " << clientFd << ": " << buffer;
 	if (_clients[clientFd].isAuthenticated){
+		std::cout << "Received from FD Permision" << clientFd << ": " << buffer;
 		handleClientCommands(clientFd, message);
 	} else {
 		std::stringstream ss(message);
@@ -140,6 +166,7 @@ void	Server::handleClientMessage(int clientFd) {
 
 		std::string restOfLine;
 		std::getline(ss, restOfLine);
+	std::cout << "Received from FD----> " << clientFd << ": " << message;
 		if (pass_word.empty() || !restOfLine.empty()) {
 			sendMessage(clientFd, std::string(RED) + "Error: PASS <password>.\n" + std::string(RESET));
 		} else if (cmd == "PASS") {
@@ -216,7 +243,7 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 		_clients[clientFd].changeChannelPassword(channelName, password);
 	}  else if (cmd == "PART") {
 		partChannel(clientFd, line);
-	} else if (cmd == "PRIVMSG" || cmd == "NOTICE") {
+	} else if (cmd == "PRIVMSG") {
 		privateNoticeMessage(clientFd, line);
 	} else if (cmd == "WHO") {
 		whoCommand(clientFd, line);

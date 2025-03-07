@@ -37,7 +37,7 @@ void Server::quitClient(int clientFd, const std::string& line) {
 
 void	Server::setUsername(int clientFd, const std::string& user) {
 	if (user.empty()) {
-		sendMessage(clientFd, std::string(RED) + "Error: Username cannot be empty.\n" + std::string(RESET));
+		sendErrorMessage(clientFd, "Error: Username cannot be empty.", 431);
 		return;
 	}
 	_clients[clientFd].setUsername(user);
@@ -46,13 +46,13 @@ void	Server::setUsername(int clientFd, const std::string& user) {
 
 void Server::changeNickname(int clientFd, const std::string& newNick) {
 	if (newNick.empty()) {
-		sendMessage(clientFd, std::string(RED) + "Error: Nickname cannot be empty.\n" + std::string(RESET));
+		sendErrorMessage(clientFd, "Error: Nickname cannot be empty.", 431);
 		return;
 	}
 	
 	for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
 		if (it->second.nickname == newNick) {
-			sendMessage(clientFd, std::string(RED) + "Error: Nickname is already in use.\n" + std::string(RESET));
+			sendErrorMessage(clientFd, "Error: Nickname is already in use.", 433);
 			return;
 		}
 	}
@@ -73,7 +73,7 @@ void	Server::privateNoticeMessage(int clientFd, const std::string& line) {
 	std::string cmd, client, message;
 	ss >> cmd >> client;
 	if (_clients[clientFd].nickname == client) {
-		sendMessage(clientFd, std::string(RED) + "Error: Cant send message to yourself.\n" + std::string(RESET));
+		sendErrorMessage(clientFd, "Error: Cant send message to yourself.", 404);
 		return;
 	}
 	std::getline(ss, message);
@@ -86,10 +86,10 @@ void	Server::privateNoticeMessage(int clientFd, const std::string& line) {
 				return;
 			}
 		}
-		sendMessage(clientFd, std::string(RED) + "Error: Nickname not found.\n" + std::string(RESET));
+		sendErrorMessage(clientFd, "Error: Nickname not found.", 401);
 	}
 	else
-		sendMessage(clientFd, std::string(RED) + "Error: No message provided.\n" + std::string(RESET));
+		sendErrorMessage(clientFd, "Error: No message provided.", 412);
 }
 void Server::kick(int clientFd, const std::string& channel, const std::string& nick) {
     for (std::vector<Channel>::iterator it = channelsIRC.begin(); it != channelsIRC.end(); ++it) {
@@ -107,19 +107,19 @@ void Server::kick(int clientFd, const std::string& channel, const std::string& n
             }
 
             if (!memberFound) {
-                sendMessage(clientFd, std::string(RED) + "Error: You are not a member of this channel.\n" + std::string(RESET));
+				sendErrorMessage(clientFd, "Error: You are not a member of this channel.", 442);
                 return;
             }
             if (!userToKickFound) {
-                sendMessage(clientFd, std::string(RED) + "Error: No member with this nick in the channel.\n" + std::string(RESET));
+				sendErrorMessage(clientFd, "Error: No member with this nick in the channel.", 441);
                 return;
             }
             if (nick == _clients[clientFd].nickname) {
-                sendMessage(clientFd, std::string(RED) + "Error: You can't kick yourself.\n" + std::string(RESET));
+				sendErrorMessage(clientFd, "Error: You can't kick yourself.", 443);
                 return;
             }
             if (!_clients[clientFd].isOperator) {
-                sendMessage(clientFd, std::string(RED) + "Error: Permission denied.\n" + std::string(RESET));
+				sendErrorMessage(clientFd, "Error: You are not an operator of this channel.", 482);
                 return;
             }
 
@@ -160,5 +160,5 @@ void Server::kick(int clientFd, const std::string& channel, const std::string& n
             return;
         }
     }
-    sendMessage(clientFd, std::string(RED) + "Error: The channel doesn't exist.\n" + std::string(RESET));
+	sendErrorMessage(clientFd, "Error: The channel doesn't exist.", 403);
 }
