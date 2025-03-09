@@ -110,7 +110,7 @@ void	Server::sendErrorMessage(int clientFd, const std::string& message, int erro
 
 
 void	Server::sendMessage(int clientFd, const std::string& message, const std::string& cmd, int errorNumber) {
-	std::string newMessage = ":" + _clients[clientFd].getNickname() + " " + cmd + " " + intToString(errorNumber) + " :" + message;
+	std::string newMessage = ":FT_IRC :" + _clients[clientFd].getNickname() + " " + cmd + " " + intToString(errorNumber) + " :" + message;
 	send(clientFd, newMessage.c_str(), newMessage.length(), 0);
 }
 
@@ -235,10 +235,6 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 	} else if (cmd == "USER") {
 		setUsername(clientFd, channelName);
 		return ;
-	}
-	if (!isChannelName(channelName)) {
-		sendErrorMessage(clientFd, "Error: Invalid channel name.", 403);
-		return;
 	} else if (cmd == "JOIN") {
 		ss >> password;
 		join(clientFd, channelName, password);

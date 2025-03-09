@@ -56,6 +56,10 @@ void	Server::invite(int clientFd, const std::string& channel, const std::string&
 
 
 void	Server::join(int clientFd, const std::string& channelName, const std::string& password) {
+	if (!isChannelName(channelName)) {
+		sendErrorMessage(clientFd, "Error: Invalid channel name.", 403);
+		return;
+	} 
 	if (_clients[clientFd].curchannel == channelName) {
 		sendErrorMessage(clientFd, "Error: You are already in this channel.", 443);
 		return ;
@@ -86,12 +90,14 @@ void	Server::join(int clientFd, const std::string& channelName, const std::strin
 				sendErrorMessage(clientFd, "Error: Channel does not have a password.", 464);
 				return ;
 			}
-			sendMessage(clientFd,  std::string(CYAN) + _clients[clientFd].getNickname() + " joined channel: " + channelName + "\n" +  std::string(RESET), "JOIN", 2);
+			std::string newMessage = ":" + _clients[clientFd].nickname + "!" + _clients[clientFd].username + "@FT_IRC JOIN :" + channelName;
+			send(clientFd, newMessage.c_str(), newMessage.length(), 0);
 			_clients[clientFd].joinChannel(channelName, password);
 			return ;
 		}
 	}
-	sendMessage(clientFd,  std::string(CYAN) + _clients[clientFd].getNickname() + " created and joined channel: " + channelName + "\n" + std::string(RESET), "JOIN", 2);
+	std::string newMessage = ":" + _clients[clientFd].nickname + "!" + _clients[clientFd].username + "@FT_IRC JOIN :" + channelName;
+	send(clientFd, newMessage.c_str(), newMessage.length(), 0);
 	_clients[clientFd].joinChannel(channelName, password);
 }
 
