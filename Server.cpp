@@ -224,16 +224,16 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 	std::string cmd, channelName, password, nick;
 	ss >> cmd >> channelName;
 
-	if (cmd != "USER" && _clients[clientFd].username.empty()) {
-		sendErrorMessage(clientFd, "Error: Please set a username before starting conversation.", 401);
-		sendErrorMessage(clientFd, std::string(YELLOW) + "Info: USER <username>.\n" + std::string(RESET), 001);
+	if (cmd != "NICK" && _clients[clientFd].nickname.empty()) {
+		sendErrorMessage(clientFd, "Error: Please set a nickname before starting conversation.", 401);
+		sendErrorMessage(clientFd, std::string(YELLOW) + "Info: NICK <nickname>.\n" + std::string(RESET), 001);
 		return ;
-	} 
-	if (cmd == "USER") {
-		setUsername(clientFd, channelName);
-		return ;
-	} else if (cmd == "NICK") {
+	}
+	if (cmd == "NICK") {
 		changeNickname(clientFd, channelName);
+		return ;
+	} else if (cmd == "USER") {
+		setUsername(clientFd, channelName);
 		return ;
 	}
 	if (!isChannelName(channelName)) {
