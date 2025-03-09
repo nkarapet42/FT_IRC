@@ -20,7 +20,7 @@ void Server::quitClient(int clientFd, const std::string& line) {
 	quitMessage += ".\n";
 
 	for (size_t i = 0; i < it->second.channels.size(); ++i) {
-		broadcastMessage(it->second.channels[i].channelName, clientFd, std::string(CYAN) + quitMessage + std::string(RESET), "QUIT");
+		broadcastMessage(it->second.channels[i].channelName, clientFd, std::string(CYAN) + quitMessage + std::string(RESET), "QUIT", 5);
 	}
 	for (size_t i = 0; i < it->second.channels.size(); ++i) {
 		it->second.leaveChannel(it->second.channels[i].channelName);
@@ -37,11 +37,11 @@ void Server::quitClient(int clientFd, const std::string& line) {
 
 void	Server::setUsername(int clientFd, const std::string& user) {
 	if (user.empty()) {
-		sendErrorMessage(clientFd, "Error: Username cannot be empty.", 431);
+		sendErrorMessage(clientFd, "Error: Username cannot be empty.", 461);
 		return;
 	}
 	_clients[clientFd].setUsername(user);
-	sendMessage(clientFd, std::string(CYAN) + "Your username has been seted.\n" + std::string(RESET), "USER");
+	sendMessage(clientFd, std::string(CYAN) + "Your username has been seted.\n" + std::string(RESET), "USER", 1);
 }
 
 void Server::changeNickname(int clientFd, const std::string& newNick) {
@@ -60,11 +60,11 @@ void Server::changeNickname(int clientFd, const std::string& newNick) {
 	std::string oldNick = _clients[clientFd].nickname;
 	_clients[clientFd].setNickname(newNick);
 	
-	sendMessage(clientFd,  std::string(CYAN) + "Your nickname has been changed to " + newNick + "\n" + std::string(RESET), "NICK");
+	sendMessage(clientFd,  std::string(CYAN) + "Your nickname has been changed to " + newNick + "\n" + std::string(RESET), "NICK", 6);
 	
 	for (size_t i = 0; i < _clients[clientFd].channels.size(); i++) {
 		std::string channel = _clients[clientFd].channels[i].channelName;
-		broadcastMessage(channel , clientFd, "User " + oldNick + " is now known as " + newNick, "NICK");
+		broadcastMessage(channel , clientFd, "User " + oldNick + " is now known as " + newNick, "NICK", 6);
 	}
 }
 
@@ -72,6 +72,10 @@ void	Server::privateNoticeMessage(int clientFd, const std::string& line) {
 	std::stringstream ss(line);
 	std::string cmd, client, message;
 	ss >> cmd >> client;
+	if (client.empty()) {
+		sendErrorMessage(clientFd, "Error: No nickname provided.", 411);
+		return;
+	}
 	if (_clients[clientFd].nickname == client) {
 		sendErrorMessage(clientFd, "Error: Cant send message to yourself.", 404);
 		return;
@@ -82,7 +86,7 @@ void	Server::privateNoticeMessage(int clientFd, const std::string& line) {
 	if (!message.empty()) {
 		for (std::map<int, Client>::iterator it = _clients.begin(); it != _clients.end(); ++it) {
 			if (it->second.nickname == client) {
-			sendMessage(it->second.fd, std::string(CYAN) + cmd + " : [ " + _clients[clientFd].nickname +" -> " + client + " ]: " + message + "\n" + std::string(RESET), "PRIVMSG");
+			sendMessage(it->second.fd, std::string(CYAN) + cmd + " : [ " + _clients[clientFd].nickname +" -> " + client + " ]: " + message + "\n" + std::string(RESET), "PRIVMSG", 8);
 				return;
 			}
 		}
@@ -115,7 +119,7 @@ void Server::kick(int clientFd, const std::string& channel, const std::string& n
                 return;
             }
             if (nick == _clients[clientFd].nickname) {
-				sendErrorMessage(clientFd, "Error: You can't kick yourself.", 443);
+				sendErrorMessage(clientFd, "Error: You can't kick yourself.", 401);
                 return;
             }
             if (!_clients[clientFd].isOperator) {
@@ -156,7 +160,7 @@ void Server::kick(int clientFd, const std::string& channel, const std::string& n
                 }
             }
 
-            sendMessage(clientFd, std::string(GREEN) + "User " + nick + " has been kicked from the channel " + channel + ".\n" + std::string(RESET), "KICK");
+            sendMessage(clientFd, std::string(GREEN) + "User " + nick + " has been kicked from the channel " + channel + ".\n" + std::string(RESET), "KICK", 9);
             return;
         }
     }

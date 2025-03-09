@@ -12,7 +12,7 @@ void Bot::botHelp(int clientFd, Server& server, const std::string& line) {
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
 	if (!restOfLine.empty()) {
-        server.sendErrorMessage(clientFd, "Error: Wrong Syntax.", 401);
+        server.sendErrorMessage(clientFd, "Error: Wrong Syntax.", 461);
 		return;
 	}
 
@@ -55,7 +55,7 @@ void Bot::sendMotd(int clientFd, Server& server, const std::string& line) {
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
 	if (!restOfLine.empty()) {
-        server.sendErrorMessage(clientFd, "Error: The !MOTD command must be used without additional arguments.", 401);
+        server.sendErrorMessage(clientFd, "Error: The !MOTD command must be used without additional arguments.", 461);
 		return;
 	}
     time_t now = time(0);
@@ -84,7 +84,7 @@ void Bot::sendMotd(int clientFd, Server& server, const std::string& line) {
     motd += "Here's a random quote for you:\n";
     motd += "\"" + quotes[randomIndex] + "\"";
 
-    server.sendMessage(clientFd, std::string(PURPLE) + motd + "\n" + std::string(RESET), " ");
+    server.sendMessage(clientFd, std::string(PURPLE) + motd + "\n" + std::string(RESET), " ", 372);
 }
 
 void Bot::sendTime(int clientFd, Server& server, const std::string& line) {
@@ -95,13 +95,13 @@ void Bot::sendTime(int clientFd, Server& server, const std::string& line) {
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
 	if (!restOfLine.empty()) {
-        server.sendErrorMessage(clientFd, "Error: The !TIME command must be used without additional arguments.", 401);
+        server.sendErrorMessage(clientFd, "Error: The !TIME command must be used without additional arguments.", 461);
 		return;
 	}
 
     time_t now = time(0);
     std::string timeStr = ctime(&now);
-    server.sendMessage(clientFd, std::string(GREEN) + "Current time: " + timeStr + std::string(RESET), " ");
+    server.sendMessage(clientFd, std::string(GREEN) + "Current time: " + timeStr + std::string(RESET), " ", 391);
 }
 
 static std::string getRandomWeather() {
@@ -172,13 +172,13 @@ void Bot::sendWeather(int clientFd, Server& server, const std::string& line) {
 	ss >> cmd >> location;
 
 	if (location.empty()) {
-        server.sendErrorMessage(clientFd, "Error: The !WEATHER command must be used with location.\n", 998);
+        server.sendErrorMessage(clientFd, "Error: The !WEATHER command must be used with location.\n", 461);
 		return;
 	}
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
 	if (!restOfLine.empty()) {
-        server.sendErrorMessage(clientFd, "Error: The !WEATHER command must be used only with one argument.\n", 998);
+        server.sendErrorMessage(clientFd, "Error: The !WEATHER command must be used only with one argument.\n", 461);
 		return;
 	}
 
@@ -190,5 +190,5 @@ void Bot::sendWeather(int clientFd, Server& server, const std::string& line) {
     for (std::vector<std::string>::iterator it = weatherArt.begin(); it != weatherArt.end(); ++it) {
 		weatherInfo += *it + "\n";
 	}
-    server.sendMessage(clientFd, weatherInfo,   " ");
+    server.sendMessage(clientFd, weatherInfo,   " ", 251);
 }

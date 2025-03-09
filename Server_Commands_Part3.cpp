@@ -1,6 +1,15 @@
 #include "Server.hpp"
 
 void	Server::invite(int clientFd, const std::string& channel, const std::string& nick) {
+	if (nick.empty()) {
+        sendErrorMessage(clientFd, "Error: Wrong Syntax.", 461);
+		sendMessage(clientFd, std::string(RED) + "Usage: INVITE <channel> [nick].\n" + std::string(RESET), "INVITE", 461);
+		return;
+	}
+	if (_clients[clientFd].isOperator) {
+		sendErrorMessage(clientFd, "Error: You must be an operator to invite users.", 482);
+		return;
+	}
 	for (std::vector<Channel>::iterator it = channelsIRC.begin(); it != channelsIRC.end(); ++it) {
 		if (it->channelName == channel) {
 			bool isInviterMember = false;
@@ -37,12 +46,12 @@ void	Server::invite(int clientFd, const std::string& channel, const std::string&
 				return;
 			}
 			it->invited.push_back(nick);
-			sendMessage(clientFd, std::string(GREEN) + "User " + nick + " has been invited to the channel " + channel + ".\n" + std::string(RESET), "INVITE");
-			sendMessage(inviteeFd, std::string(CYAN) + "You have been invited to join channel " + channel + " by " + _clients[clientFd].nickname + ".\n" + std::string(RESET), "INVITE");
+			sendMessage(clientFd, std::string(GREEN) + "User " + nick + " has been invited to the channel " + channel + ".\n" + std::string(RESET), "INVITE", 341);
+			sendMessage(inviteeFd, std::string(CYAN) + "You have been invited to join channel " + channel + " by " + _clients[clientFd].nickname + ".\n" + std::string(RESET), "INVITE", 341);
 			return;
 		}
 	}
-	sendErrorMessage(clientFd, "Error: Channel not found.", 401);
+	sendErrorMessage(clientFd, "Error: Channel not found.", 403);
 }
 
 
@@ -52,7 +61,7 @@ void	Server::join(int clientFd, const std::string& channelName, const std::strin
 		return ;
 	}
 	if (_clients[clientFd].getNickname().empty()) {
-		sendErrorMessage(clientFd, "Error: You must set a nickname before joining a channel.", 451);
+		sendErrorMessage(clientFd, "Error: You must set a nickname before joining a channel.", 431);
 		return ;
 	}
 	if (channelName.empty()) {
@@ -77,12 +86,12 @@ void	Server::join(int clientFd, const std::string& channelName, const std::strin
 				sendErrorMessage(clientFd, "Error: Channel does not have a password.", 464);
 				return ;
 			}
-			sendMessage(clientFd,  std::string(CYAN) + _clients[clientFd].getNickname() + " joined channel: " + channelName + "\n" +  std::string(RESET), "JOIN");
+			sendMessage(clientFd,  std::string(CYAN) + _clients[clientFd].getNickname() + " joined channel: " + channelName + "\n" +  std::string(RESET), "JOIN", 2);
 			_clients[clientFd].joinChannel(channelName, password);
 			return ;
 		}
 	}
-	sendMessage(clientFd,  std::string(CYAN) + _clients[clientFd].getNickname() + " created and joined channel: " + channelName + "\n" + std::string(RESET), "JOIN");
+	sendMessage(clientFd,  std::string(CYAN) + _clients[clientFd].getNickname() + " created and joined channel: " + channelName + "\n" + std::string(RESET), "JOIN", 2);
 	_clients[clientFd].joinChannel(channelName, password);
 }
 
@@ -96,11 +105,11 @@ void	Server::modeCommand(int clientFd, const std::string& channel, const std::st
 			if (mode == "i") {
 				it->isInviteOnly = !it->isInviteOnly;
 				it->havePass = !it->havePass;
-				sendMessage(clientFd, std::string(GREEN) + "Invite-only mode " + (it->havePass ? "enabled" : "disabled") + " for channel " + channel + ".\n" + std::string(RESET), "MODE");
+				sendMessage(clientFd, std::string(GREEN) + "Invite-only mode " + (it->havePass ? "enabled" : "disabled") + " for channel " + channel + ".\n" + std::string(RESET), "MODE", 324);
 			}
 			else if (mode == "t") {
 				it->isTopic = !it->isTopic;
-				sendMessage(clientFd, std::string(GREEN) + "Topic restriction " + (it->isTopic ? "enabled" : "disabled") + " for channel " + channel + ".\n" + std::string(RESET), "MODE");
+				sendMessage(clientFd, std::string(GREEN) + "Topic restriction " + (it->isTopic ? "enabled" : "disabled") + " for channel " + channel + ".\n" + std::string(RESET), "MODE", 324);
 			}
 			else if (mode == "k") {
 				if (param.empty()) {
@@ -109,7 +118,7 @@ void	Server::modeCommand(int clientFd, const std::string& channel, const std::st
 				}
 				it->channelPass = param;
 				it->havePass = true;
-				sendMessage(clientFd, std::string(GREEN) + "Password set for channel " + channel + ".\n" + std::string(RESET), "MODE");
+				sendMessage(clientFd, std::string(GREEN) + "Password set for channel " + channel + ".\n" + std::string(RESET), "MODE", 342);
 			}
 			else if (mode == "o") {
 				bool userFound = false;
@@ -117,12 +126,12 @@ void	Server::modeCommand(int clientFd, const std::string& channel, const std::st
 					if (clientIt->second.nickname == param) {
 						clientIt->second.isOperator = !clientIt->second.isOperator;
 						userFound = true;
-						sendMessage(clientFd, std::string(GREEN) + "Operator status " + (clientIt->second.isOperator ? "granted" : "revoked") + " for user " + param + " in channel " + channel + ".\n" + std::string(RESET), "MODE");
+						sendMessage(clientFd, std::string(GREEN) + "Operator status " + (clientIt->second.isOperator ? "granted" : "revoked") + " for user " + param + " in channel " + channel + ".\n" + std::string(RESET), "MODE", 324);
 						break;
 					}
 				}
 				if (!userFound) {
-					sendErrorMessage(clientFd, "Error: User not found.", 401);
+					sendErrorMessage(clientFd, "Error: User not found.", 441);
 				}
 			}
 			else if (mode == "l") {
@@ -136,14 +145,14 @@ void	Server::modeCommand(int clientFd, const std::string& channel, const std::st
 					sendErrorMessage(clientFd, "Error: Invalid limit.", 461);
 					return;
 				}
-				sendMessage(clientFd, std::string(GREEN) + "User limit set to " + param + " for channel " + channel + ".\n" + std::string(RESET), "MODE");
+				sendMessage(clientFd, std::string(GREEN) + "User limit set to " + param + " for channel " + channel + ".\n" + std::string(RESET), "MODE", 324);
 			}
 			else {
-				sendErrorMessage(clientFd, "Error: Invalid mode.", 461);
+				sendErrorMessage(clientFd, "Error: Invalid mode.", 472);
 			}
 			return;
 		}
 	}
-	sendErrorMessage(clientFd, "Error: Channel not found.", 401);
+	sendErrorMessage(clientFd, "Error: Channel not found.", 403);
 }
 

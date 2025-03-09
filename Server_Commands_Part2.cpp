@@ -8,8 +8,8 @@ void Server::whoCommand(int clientFd, const std::string& line) {
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
 	if (!restOfLine.empty()) {
-        sendErrorMessage(clientFd, "Error: Wrong Syntax.", 401);
-		sendMessage(clientFd, std::string(RED) + "Usage: WHO [channel].\n" + std::string(RESET), "WHO");
+        sendErrorMessage(clientFd, "Error: Wrong Syntax.", 461);
+		sendMessage(clientFd, std::string(RED) + "Usage: WHO [channel].\n" + std::string(RESET), "WHO", 461);
 		return;
 	}
     if (channelName.empty()) {
@@ -27,7 +27,7 @@ void Server::whoCommand(int clientFd, const std::string& line) {
                 }
             }
 
-            sendMessage(clientFd, std::string(BLUE) + response + "\n" + std::string(RESET), "WHO");
+            sendMessage(clientFd, std::string(BLUE) + response + "\n" + std::string(RESET), "WHO", 352);
         }
     } else {
         Channel* channel = NULL;
@@ -38,7 +38,7 @@ void Server::whoCommand(int clientFd, const std::string& line) {
             }
         }
         if (!channel) {
-            sendErrorMessage(clientFd, "Error: Channel not found.", 401);
+            sendErrorMessage(clientFd, "Error: Channel not found.", 403);
             return;
         }
         std::string response = "WHO " + channelName + " :";
@@ -52,7 +52,7 @@ void Server::whoCommand(int clientFd, const std::string& line) {
                 }
             }
         }
-        sendMessage(clientFd, std::string(BLUE) + response + "\n" + std::string(RESET), "WHO");
+        sendMessage(clientFd, std::string(BLUE) + response + "\n" + std::string(RESET), "WHO", 352);
     }
 }
 
@@ -62,8 +62,8 @@ void Server::partChannel(int clientFd, const std::string& line) {
 	ss >> cmd >> channelName;
 
 	if (channelName.empty()) {
-        sendErrorMessage(clientFd, "Error: Wrong Syntax.", 401);
-		sendMessage(clientFd, std::string(RED) + "Usage: PART <channel> [message].\n" + std::string(RESET), "PART");
+        sendErrorMessage(clientFd, "Error: Wrong Syntax.", 461);
+		sendMessage(clientFd, std::string(RED) + "Usage: PART <channel> [message].\n" + std::string(RESET), "PART", 461);
 		return;
 	}
 	std::string message;
@@ -78,15 +78,15 @@ void Server::partChannel(int clientFd, const std::string& line) {
 		}
 	}
 	if (!channel) {
-        sendErrorMessage(clientFd, "Error: Channel not found.", 401);
+        sendErrorMessage(clientFd, "Error: Channel not found.", 403);
 		return;
 	}
 	if (_clients[clientFd].leaveChannel(channelName)){
-		sendMessage(clientFd, std::string(GREEN) + "You left the channel.\n" + std::string(RESET), "PART");
+		sendMessage(clientFd, std::string(GREEN) + "You left the channel.\n" + std::string(RESET), "PART", 3);
 	} else {
-		sendMessage(clientFd, std::string(RED) + "You are not in channel.\n" + std::string(RESET), "PART");
+        sendErrorMessage(clientFd, "Error: You are not in channel.", 442);
 	}
-	broadcastMessage(channelName, clientFd, std::string(CYAN) + "Last words : " + message + "\n" + std::string(RESET), "PART");
+	broadcastMessage(channelName, clientFd, std::string(CYAN) + "Last words : " + message + "\n" + std::string(RESET), "PART", 3);
 }
 
 void Server::topicCommand(int clientFd, const std::string& line) {
@@ -95,8 +95,8 @@ void Server::topicCommand(int clientFd, const std::string& line) {
 	ss >> cmd >> channelName;
 
 	if (channelName.empty()) {
-        sendErrorMessage(clientFd, "Error: Wrong Syntax.", 401);
-		sendMessage(clientFd, std::string(RED) + "Usage: TOPIC <channel> [topic].\n" + std::string(RESET), "TOPIC");
+        sendErrorMessage(clientFd, "Error: Wrong Syntax.", 461);
+		sendMessage(clientFd, std::string(RED) + "Usage: TOPIC <channel> [topic].\n" + std::string(RESET), "TOPIC", 461);
 		return;
 	}
 	std::string topic;
@@ -111,13 +111,13 @@ void Server::topicCommand(int clientFd, const std::string& line) {
     }
 
     if (!channel) {
-        sendErrorMessage(clientFd, "Error: Channel not found.", 401);
+        sendErrorMessage(clientFd, "Error: Channel not found.", 403);
         return;
     }
 
     if (topic.empty()) {
         std::string response = "TOPIC " + channelName + " :" + (channel->topic.empty() ? "No topic set." : channel->topic);
-        sendMessage(clientFd, std::string(CYAN) + response + "\n" + std::string(RESET), "TOPIC");
+        sendMessage(clientFd, std::string(CYAN) + response + "\n" + std::string(RESET), "TOPIC", (channel->topic.empty() ? 331 : 332));
     } else {
         Client& client = _clients[clientFd];
         bool isOperator = false;
@@ -131,8 +131,8 @@ void Server::topicCommand(int clientFd, const std::string& line) {
         if (!channel->isTopic || isOperator) {
             channel->topic = topic;
             std::string response = "TOPIC " + channelName + " :" + topic + "\n";
-            sendMessage(clientFd, std::string(CYAN) + response + std::string(RESET), "TOPIC");
-            broadcastMessage(channelName, clientFd, std::string(CYAN) + response + std::string(RESET), "TOPIC");
+            sendMessage(clientFd, std::string(CYAN) + response + std::string(RESET), "TOPIC", 750);
+            broadcastMessage(channelName, clientFd, std::string(CYAN) + response + std::string(RESET), "TOPIC", 750);
         } else {
             sendErrorMessage(clientFd, "Error: You are not an operator of this channel.", 482);
         }
