@@ -35,6 +35,8 @@ using std::endl;
 # define PURPLE "\e[1;35m"
 # define BLUE "\e[1;34m"
 
+# define BUFFER_SIZE 512
+
 extern std::vector<Channel> channelsIRC;
 
 class Server {

@@ -58,14 +58,11 @@ void	Server::run() {
 }
 
 void	Server::authenticateClient(int clientFd, const std::string& password) {
-	std::cout<< clientFd <<std::endl;
 	if (password == _password) {
-		std::cout<< clientFd <<std::endl;
 		_clients[clientFd].isAuthenticated = true;
-		sendMessage(clientFd, std::string(GREEN) + "Authentication successful!" + std::string(RESET), " ", 001);
+		sendMessage(clientFd, std::string(GREEN) + "Authentication successful!\n" + std::string(RESET), " ", 001);
 	} else {
-		std::cout<< clientFd <<std::endl;
-		sendErrorMessage(clientFd, "Incorrect password, try again.", 464);
+		sendErrorMessage(clientFd, "Incorrect password, try again.\n", 464);
 	}
 }
 
@@ -123,40 +120,48 @@ void Server::broadcastMessage(const std::string& channelName, int senderFd, cons
 }
 
 void	Server::handleClientMessage(int clientFd) {
-	char buffer[1024];
-	std::memset(buffer, 0, sizeof(buffer));
-	int bytesRead = read(clientFd, buffer, sizeof(buffer) - 1);
-
-	if (bytesRead <= 0) {
-		if (bytesRead == 0) {
-			std::cout << "Client disconnected: FD " << clientFd << "\n";
-		} else {
-			std::cerr << "Error: recv failed for FD " << clientFd << "\n";
-		}
-		for (std::map<std::string, FileTransfer>::iterator it = activeTransfers.begin(); it != activeTransfers.end(); ++it) {
-			if (it->second.senderFd == clientFd) {
-				activeTransfers.erase(it);
-			} 
-		}
-    	_clients.erase(clientFd);
-		close(clientFd);
-		for (std::vector<pollfd>::iterator it = _pollFds.begin(); it != _pollFds.end(); ) {
-			if (it->fd == clientFd) {
-				it = _pollFds.erase(it);
+	std::string	message;
+	char 		buffer[BUFFER_SIZE + 1];
+	int 		bytesRead;
+	
+	do 
+	{
+		std::memset(buffer, 0, BUFFER_SIZE);
+		bytesRead  = recv(clientFd, buffer, BUFFER_SIZE, 0);
+		if (bytesRead <= 0) {
+			if (bytesRead == 0) {
+				std::cout << "Client disconnected: FD " << clientFd << "\n";
 			} else {
-				++it;
+				std::cerr << "Error: recv failed for FD " << clientFd << "\n";
 			}
+			for (std::map<std::string, FileTransfer>::iterator it = activeTransfers.begin(); it != activeTransfers.end(); ++it) {
+				if (it->second.senderFd == clientFd) {
+					activeTransfers.erase(it);
+				} 
+			}
+			_clients.erase(clientFd);
+			close(clientFd);
+			for (std::vector<pollfd>::iterator it = _pollFds.begin(); it != _pollFds.end(); ) {
+				if (it->fd == clientFd) {
+					it = _pollFds.erase(it);
+				} else {
+					++it;
+				}
+			}
+			return;
+		} else {
+			buffer[bytesRead] = 0;
+			message.append(buffer);
 		}
-		return;
-	}
+	} while (bytesRead == BUFFER_SIZE);
+	
 
-	std::string	message(buffer);
-	if (!message.empty() && message[message.length() - 1] == '\n') {
+	if (!message.empty() && (message[message.length() - 1] >= 9
+			&& message[message.length() - 1] <= 13)) {
 		message.erase(message.length() - 1);
 	}
 	std::cout << "Received from FD " << clientFd << ": " << buffer;
 	if (_clients[clientFd].isAuthenticated){
-		std::cout << "Received from FD Permision" << clientFd << ": " << buffer;
 		handleClientCommands(clientFd, message);
 	} else {
 		std::stringstream ss(message);
@@ -165,10 +170,13 @@ void	Server::handleClientMessage(int clientFd) {
 
 		std::string restOfLine;
 		std::getline(ss, restOfLine);
-	std::cout << "Received from FD----> " << clientFd << ": " << message;
+		if (!restOfLine.empty() && (restOfLine[restOfLine.length() - 1] >= 9
+			&& restOfLine[restOfLine.length() - 1] <= 13)) {
+			restOfLine.erase(restOfLine.length() - 1);
+		}
 		if (pass_word.empty() || !restOfLine.empty()) {
 			sendErrorMessage(clientFd, "Error: PASS <password>.\n", 464);\
-		} else if (cmd == "PASS") {
+		} else if (cmd == std::string("PASS")) {
 			authenticateClient(clientFd, pass_word);
 		} else {
 			sendErrorMessage(clientFd, "Error: PASS <password>.\n", 464);
