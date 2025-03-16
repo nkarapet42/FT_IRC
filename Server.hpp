@@ -37,6 +37,7 @@ using std::endl;
 
 # define BUFFER_SIZE 512
 
+void		endErase(std::string& line);
 extern std::vector<Channel> channelsIRC;
 
 class Server {
@@ -98,5 +99,5 @@ private:
 	void		handleClientMessage(int clientFd);
 	void		sendMessage(int clientFd, const std::string& message, const std::string& cmd, int errorNumber = 0);
 	void		sendErrorMessage(int clientFd, const std::string& message, int errorNumber);
-	
+
 };

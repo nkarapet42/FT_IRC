@@ -6,6 +6,7 @@ void Server::quitClient(int clientFd, const std::string& line) {
 	ss >> cmd;
 	std::string message;
 	std::getline(ss, message);
+	endErase(message);
 	std::map<int, Client>::iterator it = _clients.find(clientFd);
 	if (it == _clients.end()) {
 		return;
@@ -72,6 +73,8 @@ void	Server::privateNoticeMessage(int clientFd, const std::string& line) {
 	std::stringstream ss(line);
 	std::string cmd, client, message;
 	ss >> cmd >> client;
+	endErase(cmd);
+	endErase(client);
 	if (client.empty()) {
 		sendErrorMessage(clientFd, "Error: No nickname provided.", 411);
 		return;
@@ -81,6 +84,7 @@ void	Server::privateNoticeMessage(int clientFd, const std::string& line) {
 		return;
 	}
 	std::getline(ss, message);
+	endErase(message);
 	if (!message.empty() && message[0] == ' ')
 		message = message.substr(1);
 	if (!message.empty()) {

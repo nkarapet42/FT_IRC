@@ -11,10 +11,7 @@ void Bot::botHelp(int clientFd, Server& server, const std::string& line) {
 
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
-    if (!restOfLine.empty() && (restOfLine[restOfLine.length() - 1] >= 9
-			&& restOfLine[restOfLine.length() - 1] <= 13)) {
-			restOfLine.erase(restOfLine.length() - 1);
-	}
+    endErase(restOfLine);
 	if (!restOfLine.empty()) {
         server.sendErrorMessage(clientFd, "Error: Wrong Syntax.", 461);
 		return;
@@ -22,26 +19,26 @@ void Bot::botHelp(int clientFd, Server& server, const std::string& line) {
 
 	std::string helpMessage = "Inforamtion about Commands:\n";
 	helpMessage += "Note: <> means required, [] means optional.\n";
-	helpMessage += "DCC GET <filename> - for accept file transfer\n";
-	helpMessage += "DCC SEND <nickname> <filename> - for send file to user\n";
-	helpMessage += "INVITE <channel> <nickname> - For Inviteing to the channel\n";
-	helpMessage += "JOIN <channel> [password] - Join a channel\n";
-	helpMessage += "KICK <channel> <nickname> - Kick a user from a channel\n";
-	helpMessage += "NICK <nickname> - Set your nickname\n";
-	helpMessage += "\nMODE <channel> <mode> [parameter]\n";
+	helpMessage += ":DCC GET <filename> - for accept file transfer\n";
+	helpMessage += ":DCC SEND <nickname> <filename> - for send file to user\n";
+	helpMessage += ":INVITE <channel> <nickname> - For Inviteing to the channel\n";
+	helpMessage += ":JOIN <channel> [password] - Join a channel\n";
+	helpMessage += ":KICK <channel> <nickname> - Kick a user from a channel\n";
+	helpMessage += ":NICK <nickname> - Set your nickname\n";
+	helpMessage += "\n:MODE <channel> <mode> [parameter]\n";
     helpMessage += "* Available modes:\n";
     helpMessage += "  - i : Toggle invite-only mode (only invited users can join).\n";
     helpMessage += "  - t : Toggle topic restriction (only operators can change the topic).\n";
     helpMessage += "  - k <password> : Set or remove a password for the channel.\n";
     helpMessage += "  - o <nickname> : Grant or revoke operator privileges for a user.\n";
     helpMessage += "  - l <limit> : Set a user limit for the channel.\n\n";
-	helpMessage += "PRIVMSG <nickname> <message> - Send private message\n";
-	helpMessage += "PASS <password> - Pass to join Server\n";
-	helpMessage += "PART <channel> - Leave the channel\n";
-	helpMessage += "QUIT [message] - Quit the server\n";
-	helpMessage += "TOPIC <channel> [topic] - Show the channel Topic\n";
-	helpMessage += "USER <username> - Set your username\n";
-	helpMessage += "WHO [channel] - Show all users in Server [channel]\n";
+	helpMessage += ":PRIVMSG <nickname> <message> - Send private message\n";
+	helpMessage += ":PASS <password> - Pass to join Server\n";
+	helpMessage += ":PART <channel> - Leave the channel\n";
+	helpMessage += ":QUIT [message] - Quit the server\n";
+	helpMessage += ":TOPIC <channel> [topic] - Show the channel Topic\n";
+	helpMessage += ":USER <username> - Set your username\n";
+	helpMessage += ":WHO [channel] - Show all users in Server [channel]\n";
 	helpMessage += "Bot Commands Information:\n";
 	helpMessage += "!HELP - Show this help message\n";
 	helpMessage += "!MOTD - Get the message of the day \n";
@@ -58,10 +55,7 @@ void Bot::sendMotd(int clientFd, Server& server, const std::string& line) {
 
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
-    if (!restOfLine.empty() && (restOfLine[restOfLine.length() - 1] >= 9
-			&& restOfLine[restOfLine.length() - 1] <= 13)) {
-        restOfLine.erase(restOfLine.length() - 1);
-    }
+    endErase(restOfLine);
 	if (!restOfLine.empty()) {
         server.sendErrorMessage(clientFd, "Error: The !MOTD command must be used without additional arguments.", 461);
 		return;
@@ -102,10 +96,7 @@ void Bot::sendTime(int clientFd, Server& server, const std::string& line) {
 
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
-    if (!restOfLine.empty() && (restOfLine[restOfLine.length() - 1] >= 9
-			&& restOfLine[restOfLine.length() - 1] <= 13)) {
-        restOfLine.erase(restOfLine.length() - 1);
-    }
+    endErase(restOfLine);
 	if (!restOfLine.empty()) {
         server.sendErrorMessage(clientFd, "Error: The !TIME command must be used without additional arguments.", 461);
 		return;
@@ -189,10 +180,7 @@ void Bot::sendWeather(int clientFd, Server& server, const std::string& line) {
 	}
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
-    if (!restOfLine.empty() && (restOfLine[restOfLine.length() - 1] >= 9
-			&& restOfLine[restOfLine.length() - 1] <= 13)) {
-        restOfLine.erase(restOfLine.length() - 1);
-    }
+    endErase(restOfLine);
 	if (!restOfLine.empty()) {
         server.sendErrorMessage(clientFd, "Error: The !WEATHER command must be used only with one argument.\n", 461);
 		return;

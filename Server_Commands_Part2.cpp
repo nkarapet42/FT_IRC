@@ -5,12 +5,11 @@ void Server::whoCommand(int clientFd, const std::string& line) {
 	std::string cmd, channelName;
 	ss >> cmd >> channelName;
 
+    endErase(cmd);
+    endErase(channelName);
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
-    if (!restOfLine.empty() && (restOfLine[restOfLine.length() - 1] >= 9
-			&& restOfLine[restOfLine.length() - 1] <= 13)) {
-        restOfLine.erase(restOfLine.length() - 1);
-    }
+    endErase(restOfLine);
 	if (!restOfLine.empty()) {
         sendErrorMessage(clientFd, "Error: Wrong Syntax.", 461);
 		sendMessage(clientFd, std::string(RED) + "Usage: WHO [channel].\n" + std::string(RESET), "WHO", 461);
@@ -98,6 +97,8 @@ void Server::topicCommand(int clientFd, const std::string& line) {
 	std::string cmd, channelName;
 	ss >> cmd >> channelName;
 
+    endErase(cmd);
+    endErase(channelName);
 	if (channelName.empty()) {
         sendErrorMessage(clientFd, "Error: Wrong Syntax.", 461);
 		sendMessage(clientFd, std::string(RED) + "Usage: TOPIC <channel> [topic].\n" + std::string(RESET), "TOPIC", 461);
@@ -105,6 +106,7 @@ void Server::topicCommand(int clientFd, const std::string& line) {
 	}
 	std::string topic;
 	std::getline(ss, topic);
+    endErase(topic);
 
     Channel* channel = NULL;
     for (std::vector<Channel>::iterator it = channelsIRC.begin(); it != channelsIRC.end(); ++it) {

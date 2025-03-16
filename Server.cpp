@@ -84,6 +84,13 @@ void	Server::acceptNewClient() {
 	std::cout << "New client connected: FD " << clientFd << "\n";
 }
 
+void	endErase(std::string& line) {
+	if (!line.empty() && (line[line.length() - 1] >= 9
+			&& line[line.length() - 1] <= 13)) {
+		line.erase(line.length() - 1);
+	}
+}
+
 std::string intToString(int value) {
     std::ostringstream oss;
     oss << value;
@@ -156,10 +163,7 @@ void	Server::handleClientMessage(int clientFd) {
 	} while (bytesRead == BUFFER_SIZE);
 	
 
-	if (!message.empty() && (message[message.length() - 1] >= 9
-			&& message[message.length() - 1] <= 13)) {
-		message.erase(message.length() - 1);
-	}
+	endErase(message);
 	std::cout << "Received from FD " << clientFd << ": " << buffer;
 	if (_clients[clientFd].isAuthenticated){
 		handleClientCommands(clientFd, message);
@@ -170,10 +174,7 @@ void	Server::handleClientMessage(int clientFd) {
 
 		std::string restOfLine;
 		std::getline(ss, restOfLine);
-		if (!restOfLine.empty() && (restOfLine[restOfLine.length() - 1] >= 9
-			&& restOfLine[restOfLine.length() - 1] <= 13)) {
-			restOfLine.erase(restOfLine.length() - 1);
-		}
+		endErase(restOfLine);
 		if (pass_word.empty() || !restOfLine.empty()) {
 			sendErrorMessage(clientFd, "Error: PASS <password>.\n", 464);\
 		} else if (cmd == std::string("PASS")) {
@@ -188,6 +189,8 @@ void	Server::Message(int clientFd, const std::string& line) {
 	std::stringstream ss(line);
 	std::string message;
 	std::getline(ss, message);
+
+	endErase(message);
 	if (!message.empty() && message[0] == ' ')
 		message = message.substr(1);
 	if (!message.empty())
@@ -232,6 +235,8 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 	std::string cmd, channelName, password, nick;
 	ss >> cmd >> channelName;
 
+	endErase(cmd);
+	endErase(channelName);
 	if (cmd != "NICK" && _clients[clientFd].nickname.empty()) {
 		sendErrorMessage(clientFd, "Error: Please set a nickname before starting conversation.", 401);
 		sendErrorMessage(clientFd, std::string(YELLOW) + "Info: NICK <nickname>.\n" + std::string(RESET), 001);
@@ -245,18 +250,23 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 		return ;
 	} else if (cmd == "JOIN") {
 		ss >> password;
+		endErase(password);
 		join(clientFd, channelName, password);
 	}  else if (cmd == "INVITE") {
 		ss >> nick;
+		endErase(nick);
 		invite(clientFd, channelName, nick);
 	} else if (cmd == "MODE") {
 		std::string mode, param;
 		ss >> mode >> param;
+		endErase(mode);
+		endErase(param);
 		modeCommand(clientFd, channelName, mode, param);
 	} else if (cmd == "QUIT") {
 		quitClient(clientFd, line);
 	} else if (cmd == "PASS") {
 		ss >> password;
+		endErase(password);
 		_clients[clientFd].changeChannelPassword(channelName, password);
 	}  else if (cmd == "PART") {
 		partChannel(clientFd, line);
@@ -269,6 +279,7 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 		topicCommand(clientFd, line);
 	} else if (cmd == "KICK") {
 		ss >> nick;
+		endErase(nick);
 		kick(clientFd, channelName, nick);
 	} else if (cmd == "DCC") {
 		if (channelName == "SEND") {
