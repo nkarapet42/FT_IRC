@@ -11,6 +11,10 @@ void Bot::botHelp(int clientFd, Server& server, const std::string& line) {
 
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
+    if (!restOfLine.empty() && (restOfLine[restOfLine.length() - 1] >= 9
+			&& restOfLine[restOfLine.length() - 1] <= 13)) {
+			restOfLine.erase(restOfLine.length() - 1);
+	}
 	if (!restOfLine.empty()) {
         server.sendErrorMessage(clientFd, "Error: Wrong Syntax.", 461);
 		return;
@@ -54,6 +58,10 @@ void Bot::sendMotd(int clientFd, Server& server, const std::string& line) {
 
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
+    if (!restOfLine.empty() && (restOfLine[restOfLine.length() - 1] >= 9
+			&& restOfLine[restOfLine.length() - 1] <= 13)) {
+        restOfLine.erase(restOfLine.length() - 1);
+    }
 	if (!restOfLine.empty()) {
         server.sendErrorMessage(clientFd, "Error: The !MOTD command must be used without additional arguments.", 461);
 		return;
@@ -94,6 +102,10 @@ void Bot::sendTime(int clientFd, Server& server, const std::string& line) {
 
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
+    if (!restOfLine.empty() && (restOfLine[restOfLine.length() - 1] >= 9
+			&& restOfLine[restOfLine.length() - 1] <= 13)) {
+        restOfLine.erase(restOfLine.length() - 1);
+    }
 	if (!restOfLine.empty()) {
         server.sendErrorMessage(clientFd, "Error: The !TIME command must be used without additional arguments.", 461);
 		return;
@@ -177,6 +189,10 @@ void Bot::sendWeather(int clientFd, Server& server, const std::string& line) {
 	}
 	std::string restOfLine;
 	std::getline(ss, restOfLine);
+    if (!restOfLine.empty() && (restOfLine[restOfLine.length() - 1] >= 9
+			&& restOfLine[restOfLine.length() - 1] <= 13)) {
+        restOfLine.erase(restOfLine.length() - 1);
+    }
 	if (!restOfLine.empty()) {
         server.sendErrorMessage(clientFd, "Error: The !WEATHER command must be used only with one argument.\n", 461);
 		return;
