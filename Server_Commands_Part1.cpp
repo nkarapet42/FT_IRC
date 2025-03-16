@@ -99,6 +99,7 @@ void	Server::privateNoticeMessage(int clientFd, const std::string& line) {
 	else
 		sendErrorMessage(clientFd, "Error: No message provided.", 412);
 }
+
 void Server::kick(int clientFd, const std::string& channel, const std::string& nick) {
     for (std::vector<Channel>::iterator it = channelsIRC.begin(); it != channelsIRC.end(); ++it) {
         if (it->channelName == channel) {

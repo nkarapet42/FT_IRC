@@ -296,4 +296,3 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 		sendMessage(clientFd, std::string(PURPLE) + "Use !HELP to know more about commands" + std::string(RESET) + "\n", " ");
 	}
 }
-
