@@ -187,9 +187,21 @@ void	Server::handleClientMessage(int clientFd) {
 
 void	Server::Message(int clientFd, const std::string& line) {
 	std::stringstream ss(line);
-	std::string message;
+	std::string cmd, channelName, message;
+	ss >> cmd >> channelName;
+	if(channelName.empty()) {
+		sendErrorMessage(clientFd, "Error: No channelName provided.", 411);
+		return;
+	}
+	if (channelName[0] != '#') {
+		sendErrorMessage(clientFd, "Error: Wrong channel name provided.", 411);
+		return;
+	}
+	if (_clients[clientFd].curchannel != channelName) {
+		sendErrorMessage(clientFd, "Error: You are not in this channel.", 404);
+		return;
+	}
 	std::getline(ss, message);
-
 	endErase(message);
 	if (!message.empty() && message[0] == ' ')
 		message = message.substr(1);
@@ -271,8 +283,10 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 	}  else if (cmd == "PART") {
 		partChannel(clientFd, line);
 	} else if (cmd == "PRIVMSG") {
-		privateNoticeMessage(clientFd, line);
-		Message(clientFd, line);
+		if (channelName[0] != '#')
+			privateNoticeMessage(clientFd, line);
+		else
+			Message(clientFd, line);
 	} else if (cmd == "WHO") {
 		whoCommand(clientFd, line);
 	} else if (cmd == "TOPIC") {

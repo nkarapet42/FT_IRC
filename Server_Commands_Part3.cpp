@@ -90,13 +90,13 @@ void	Server::join(int clientFd, const std::string& channelName, const std::strin
 				sendErrorMessage(clientFd, "Error: Channel does not have a password.", 464);
 				return ;
 			}
-			std::string newMessage = ":" + _clients[clientFd].nickname + "!" + _clients[clientFd].username + "@FT_IRC JOIN :" + channelName;
+			std::string newMessage = ":" + _clients[clientFd].nickname + "!" + _clients[clientFd].username + "@FT_IRC JOIN :" + channelName + "\n";
 			send(clientFd, newMessage.c_str(), newMessage.length(), 0);
 			_clients[clientFd].joinChannel(channelName, password);
 			return ;
 		}
 	}
-	std::string newMessage = ":" + _clients[clientFd].nickname + "!" + _clients[clientFd].username + "@FT_IRC JOIN :" + channelName;
+	std::string newMessage = ":" + _clients[clientFd].nickname + "!" + _clients[clientFd].username + "@FT_IRC JOIN :" + channelName + "\n";
 	send(clientFd, newMessage.c_str(), newMessage.length(), 0);
 	_clients[clientFd].joinChannel(channelName, password);
 }

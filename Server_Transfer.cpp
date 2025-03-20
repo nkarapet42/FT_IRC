@@ -138,7 +138,7 @@ void Server::connectToSender(int receiverFd, const FileTransfer& transfer) {
     info << "DCC GET " << filename << " " << fileSize << " " << dccFilePath;
     sendMessage(receiverFd, std::string(YELLOW) + info.str() + "\n" + std::string(RESET), "DCC");
 
-    sendMessage(receiverFd, std::string(GREEN) + "File transfer completed." + std::string(RESET), "DCC", 251);
+    sendMessage(receiverFd, std::string(GREEN) + "File transfer completed.\n" + std::string(RESET), "DCC", 251);
 }
 
 void Server::dccGet(int receiverFd, const std::string& line) {
