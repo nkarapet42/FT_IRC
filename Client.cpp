@@ -69,10 +69,12 @@ void    Client::joinChannel(const std::string& channelName, const std::string& p
                     std::cout << nickname << " joined channel: " << channelName << "\n";
                     curchannel = channelName;
                     channelsIRC[i].members.push_back(nickname);
-
-                    if (channelsIRC[i].members[0] == nickname) {
-                        this->isOperator = true;
-                    }
+                    Info newChannel;
+                    newChannel.channelName = channelName;
+                    newChannel.password = password;
+                    newChannel.isOperator = (channelsIRC[i].members[0] == nickname); 
+                    newChannel.members.push_back(nickname);
+                    channels.push_back(newChannel);
                     return;
                 }
             }

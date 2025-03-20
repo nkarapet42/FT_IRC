@@ -6,9 +6,14 @@ void	Server::invite(int clientFd, const std::string& channel, const std::string&
 		sendMessage(clientFd, std::string(RED) + "Usage: INVITE <channel> [nick].\n" + std::string(RESET), "INVITE", 461);
 		return;
 	}
-	if (_clients[clientFd].isOperator) {
-		sendErrorMessage(clientFd, "Error: You must be an operator to invite users.", 482);
-		return;
+	for (size_t i = 0; i < _clients[clientFd].channels.size(); i++) {
+		if (_clients[clientFd].channels[i].channelName == channel) {
+			if (!_clients[clientFd].channels[i].isOperator) {
+				sendErrorMessage(clientFd, "Error: You must be an operator to invite.", 482);
+				return;
+			} else 
+				break ;
+		}
 	}
 	for (std::vector<Channel>::iterator it = channelsIRC.begin(); it != channelsIRC.end(); ++it) {
 		if (it->channelName == channel) {
@@ -135,10 +140,18 @@ void	Server::modeCommand(int clientFd, const std::string& channel, const std::st
 				bool userFound = false;
 				for (std::map<int, Client>::iterator clientIt = _clients.begin(); clientIt != _clients.end(); ++clientIt) {
 					if (clientIt->second.nickname == param) {
-						clientIt->second.isOperator = !clientIt->second.isOperator;
-						userFound = true;
-						sendMessage(clientFd, std::string(GREEN) + "Operator status " + (clientIt->second.isOperator ? "granted" : "revoked") + " for user " + param + " in channel " + channel + ".\n" + std::string(RESET), "MODE", 324);
-						break;
+						for (size_t i = 0; i < _clients[clientFd].channels.size(); i++) {
+							if (clientIt->second.channels[i].channelName == channel) {
+								if (param == _clients[clientFd].nickname) {
+									sendErrorMessage(clientFd, "Error: You can't change the mode by yourself.", 401);
+									return;
+								}
+								clientIt->second.channels[i].isOperator = !clientIt->second.channels[i].isOperator;
+								userFound = true;
+								sendMessage(clientFd, std::string(GREEN) + "Operator status " + (clientIt->second.isOperator ? "granted" : "revoked") + " for user " + param + " in channel " + channel + ".\n" + std::string(RESET), "MODE", 324);
+								break;
+							}
+						}
 					}
 				}
 				if (!userFound) {
