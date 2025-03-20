@@ -24,7 +24,7 @@ void Server::whoCommand(int clientFd, const std::string& line) {
                 for (std::vector<Info>::iterator infoIt = client.channels.begin(); infoIt != client.channels.end(); ++infoIt) {
                     if (infoIt->channelName == channel.channelName) {
                         response += client.nickname + " ";
-                        response += (client.isOperator ? "(operator) " : "(normal) ");
+                        response += (infoIt->isOperator ? "(operator) " : "(normal) ");
                         break;
                     }
                 }

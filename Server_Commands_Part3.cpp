@@ -104,9 +104,14 @@ void	Server::join(int clientFd, const std::string& channelName, const std::strin
 void	Server::modeCommand(int clientFd, const std::string& channel, const std::string& mode, const std::string& param) {
 	for (std::vector<Channel>::iterator it = channelsIRC.begin(); it != channelsIRC.end(); ++it) {
 		if (it->channelName == channel) {
-			if (!_clients[clientFd].isOperator) {
-				sendErrorMessage(clientFd, "Error: You must be an operator to change channel modes.", 482);
-				return;
+			for (size_t i = 0; i < _clients[clientFd].channels.size(); i++) {
+				if (_clients[clientFd].channels[i].channelName == channel) {
+					if (!_clients[clientFd].channels[i].isOperator) {
+						sendErrorMessage(clientFd, "Error: You must be an operator to change channel modes.", 482);
+						return;
+					} else 
+						break ;
+				}
 			}
 			if (mode == "i") {
 				it->isInviteOnly = !it->isInviteOnly;

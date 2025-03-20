@@ -137,7 +137,30 @@ void	Server::handleClientMessage(int clientFd) {
 		bytesRead  = recv(clientFd, buffer, BUFFER_SIZE, 0);
 		if (bytesRead <= 0) {
 			if (bytesRead == 0) {
+				std::map<int, Client>::iterator it = _clients.find(clientFd);
+				if (it == _clients.end()) {
+					return;
+				}
+				std::string quitMessage = "Client " + it->second.nickname + " has left the server";
+				if (!message.empty()) {
+					quitMessage += " (" + message + ")";
+				} else {
+					quitMessage += " (All eyes on me)";
+				}
+				quitMessage += ".\n";
+
+				for (size_t i = 0; i < it->second.channels.size(); ++i) {
+					broadcastMessage(it->second.channels[i].channelName, clientFd, std::string(CYAN) + quitMessage + std::string(RESET), "QUIT", 5);
+				}
+				for (size_t i = 0; i < it->second.channels.size(); ++i) {
+					it->second.leaveChannel(it->second.channels[i].channelName);
+				}
 				std::cout << "Client disconnected: FD " << clientFd << "\n";
+				for (std::map<std::string, FileTransfer>::iterator it = activeTransfers.begin(); it != activeTransfers.end(); ++it) {
+					if (it->second.senderFd == clientFd) {
+						activeTransfers.erase(it);
+					} 
+				}
 			} else {
 				std::cerr << "Error: recv failed for FD " << clientFd << "\n";
 			}
@@ -252,6 +275,11 @@ void Server::handleClientCommands(int clientFd, const std::string& line) {
 	if (cmd != "NICK" && _clients[clientFd].nickname.empty()) {
 		sendErrorMessage(clientFd, "Error: Please set a nickname before starting conversation.", 401);
 		sendErrorMessage(clientFd, std::string(YELLOW) + "Info: NICK <nickname>.\n" + std::string(RESET), 001);
+		return ;
+	}
+	if (!_clients[clientFd].nickname.empty() && cmd != "USER" && _clients[clientFd].username.empty()) {
+		sendErrorMessage(clientFd, "Error: Please set a username before starting conversation.", 401);
+		sendErrorMessage(clientFd, std::string(YELLOW) + "Info: USER <username>.\n" + std::string(RESET), 001);
 		return ;
 	}
 	if (cmd == "NICK") {

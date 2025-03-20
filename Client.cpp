@@ -45,9 +45,6 @@ void    Client::createChannel(const std::string& channelName, const std::string&
     newChannel.members.push_back(nickname);
     channelsIRC.push_back(newChannel);
 
-    std::cout << nickname << " created and joined channel: " << channelName << "\n";
-    curchannel = channelName;
-
     Info newInfo;
     newInfo.channelName = channelName;
     newInfo.password = password;
@@ -116,13 +113,25 @@ bool    Client::leaveChannel(const std::string& channel) {
             if (channels[i].members.empty()) {
                 for (std::vector<Channel>::iterator ch_it = channelsIRC.begin(); ch_it != channelsIRC.end(); ++ch_it) {
                     if (ch_it->channelName == channel) {
-                        channelsIRC.erase(ch_it);
-                        std::cout << "Channel " << channel << " has been deleted (no members left)." << std::endl;
+                        
                         break;
                     }
                 }
             }
             channels.erase(channels.begin() + i);
+            for (size_t j = 0; j < channelsIRC.size(); ++j) {
+                if (channelsIRC[j].channelName == channel) {
+                    std::vector<std::string>::iterator it = std::find(
+                        channelsIRC[j].members.begin(), channelsIRC[j].members.end(), nickname);
+                    if (it != channelsIRC[j].members.end()) {
+                        channelsIRC[j].members.erase(it);
+                        if (channelsIRC[j].members.empty()) {
+                            channelsIRC.erase(channelsIRC.begin() + j);
+                            std::cout << "Channel " << channel << " has been deleted (no members left)." << std::endl;
+                        }
+                    }
+                }
+            }
             std::cout << nickname << " Left channel: " << channel << std::endl;
             if (curchannel == channel) {
                 curchannel = channels.empty() ? "" : channels.back().channelName;
