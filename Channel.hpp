@@ -24,5 +24,14 @@ struct Channel {
 		}
 		return false;
 	}
+
+	bool	isUserMember(const std::string& nickname) {
+		for (size_t i = 0; i < members.size(); i++) {
+			if (members[i] == nickname) {
+				return true;
+			}
+		}
+		return false;
+	}
 };
 

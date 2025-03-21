@@ -52,6 +52,7 @@ void    Client::createChannel(const std::string& channelName, const std::string&
     newInfo.members.push_back(nickname);
     channels.push_back(newInfo);
 
+    this->curchannel = channelName;
     this->isOperator = true;
 }
 

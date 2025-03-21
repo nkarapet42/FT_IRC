@@ -83,7 +83,8 @@ void	Server::join(int clientFd, const std::string& channelName, const std::strin
 				sendErrorMessage(clientFd, "Error: Channel is full.", 471);
 				return ;
 			}
-			if (channelsIRC[i].isInviteOnly && !channelsIRC[i].isUserInvited(_clients[clientFd].getNickname())) {
+			if ((channelsIRC[i].isInviteOnly && !channelsIRC[i].isUserInvited(_clients[clientFd].getNickname()))
+					&& (!channelsIRC[i].isUserMember(_clients[clientFd].getNickname()))) {
 				sendErrorMessage(clientFd, "Error: Channel is invite-only.", 473);
 				return ;
 			}
