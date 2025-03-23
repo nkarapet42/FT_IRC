@@ -39,6 +39,17 @@ void	Server::invite(int clientFd, const std::string& channel, const std::string&
 				sendErrorMessage(clientFd, "Error: User is already a member of the channel.", 443);
 				return;
 			}
+			bool isInvited = false;
+			for (size_t i = 0; i < it->invited.size(); i++) {
+				if (it->invited[i] == nick) {
+					isInvited = true;
+					break;
+				}
+			}
+			if (isInvited) {
+				sendErrorMessage(clientFd, "Error: User has been already invited.", 443);
+				return;
+			}
 			int inviteeFd = -1;
 			for (std::map<int, Client>::iterator clientIt = _clients.begin(); clientIt != _clients.end(); ++clientIt) {
 				if (clientIt->second.nickname == nick) {

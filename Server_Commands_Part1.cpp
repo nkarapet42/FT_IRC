@@ -26,6 +26,14 @@ void Server::quitClient(int clientFd, const std::string& line) {
 	for (size_t i = 0; i < it->second.channels.size(); ++i) {
 		it->second.leaveChannel(it->second.channels[i].channelName);
 	}
+	for (size_t j = 0; j < channelsIRC.size(); j++) {
+		for (size_t i = 0; i < channelsIRC[j].invited.size(); i++) {
+			if (channelsIRC[j].invited[i] == it->second.nickname) {
+				channelsIRC[j].invited.erase(channelsIRC[j].invited.begin() + i);
+				break;
+			}
+		}
+	}	
 	std::cout << "Client disconnected: FD " << clientFd << "\n";
 	for (std::map<std::string, FileTransfer>::iterator it = activeTransfers.begin(); it != activeTransfers.end(); ++it) {
 		if (it->second.senderFd == clientFd) {

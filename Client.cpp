@@ -50,8 +50,9 @@ void    Client::createChannel(const std::string& channelName, const std::string&
     newInfo.password = password;
     newInfo.isOperator = true;
     newInfo.members.push_back(nickname);
-    channels.push_back(newInfo);
+    this->channels.push_back(newInfo);
 
+    std::cout << nickname << " created channel: " << channelName << "\n";
     this->curchannel = channelName;
     this->isOperator = true;
 }
