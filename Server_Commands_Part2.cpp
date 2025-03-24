@@ -64,6 +64,8 @@ void Server::partChannel(int clientFd, const std::string& line) {
 	std::string cmd, channelName;
 	ss >> cmd >> channelName;
 
+    endErase(cmd);
+    endErase(channelName);
 	if (channelName.empty()) {
         sendErrorMessage(clientFd, "Error: Wrong Syntax.", 461);
 		sendMessage(clientFd, std::string(RED) + "Usage: PART <channel> [message].\n" + std::string(RESET), "PART", 461);
@@ -71,6 +73,7 @@ void Server::partChannel(int clientFd, const std::string& line) {
 	}
 	std::string message;
 	std::getline(ss, message);
+    endErase(message);
 	if (message.empty())
 		message += "GoodBye my Friend's";
 	Channel* channel = NULL;
